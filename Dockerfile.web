@@ -21,4 +21,4 @@ EXPOSE 3000
 ENV NODE_ENV=production
 
 # Start the Next.js server
-CMD ["npx", "serve@latest", "apps/tauri-app/out", "-l", "3001"]
+CMD ["npx", "serve@latest", "apps/tauri-app/out", "-l", "3000"]

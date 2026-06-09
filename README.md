@@ -116,7 +116,7 @@ pnpm dev  # Runs API, Web, and Redis in development mode
 
 2. **Manual deployment**:
    - API runs on port 4000
-   - Web frontend (tauri-app's Next.js) runs on port 3001
+   - Web frontend (tauri-app's Next.js) runs on port 300
    - Redis runs on port 6379
 
 See [VPS_DEPLOYMENT.md](./VPS_DEPLOYMENT.md) for full deployment instructions.

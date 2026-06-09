@@ -2,7 +2,7 @@
 
 ## Architecture
 - **API Service**: Runs in Docker on port 4000
-- **Web Frontend**: Runs in Docker on port 3001
+- **Web Frontend**: Runs in Docker on port 3000
 - **Redis Cache**: Runs in Docker on port 6379
 - **Tauri App**: Desktop app (runs locally on user machines)
 
@@ -52,7 +52,7 @@ pnpm --filter @repo/api start
 ```bash
 pnpm install
 pnpm --filter tauri-app build
-pnpm --filter tauri-app start --port 3001
+pnpm --filter tauri-app start --port 3000
 ```
 
 #### Start Redis (requires Redis installed)
@@ -62,7 +62,7 @@ redis-server
 
 ## Access Services
 - **API**: http://your-vps-ip:4000
-- **Web**: http://your-vps-ip:3001
+- **Web**: http://your-vps-ip:3000
 - **API Health**: http://your-vps-ip:4000/health
 - **API Docs**: http://your-vps-ip:4000/docs
 
@@ -73,7 +73,7 @@ upstream api {
 }
 
 upstream web {
-    server localhost:3001;
+    server localhost:3000;
 }
 
 server {
@@ -104,7 +104,7 @@ docker-compose -f docker-compose.prod.yml down
 ## Important Notes
 ⚠️ **Tauri App**: The Tauri desktop app ONLY runs on user machines locally. It's not meant for VPS deployment.
 - Users run: `pnpm tauri:dev` or built Tauri binary locally
-- Web app: Runs on VPS on port 3001 for browser access
+- Web app: Runs on VPS on port 3000 for browser access
 
 ## Troubleshooting
 

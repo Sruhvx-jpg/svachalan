@@ -6,9 +6,9 @@
   "scripts": {
     "dev": "tauri dev",
     "build": "next build",
-    "start": "next start --port 3001",
+    "start": "next start --port 3000",
     "lint": "next lint",
-    "preview": "next preview --port 3001",
+    "preview": "next preview --port 3000",
     "tauri": "tauri"
   },
   "dependencies": {

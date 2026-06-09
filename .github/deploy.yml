@@ -3,12 +3,11 @@ name: Deploy Svachalan
 on:
   push:
     branches:
-          - main
+      - main
 
 jobs:
-deploy:
-runs-on: ubuntu-latest
-
+  deploy:
+    runs-on: ubuntu-latest
 
 steps:
   - name: Checkout code
@@ -32,4 +31,3 @@ steps:
         docker compose up -d
 
         docker image prune -f
-

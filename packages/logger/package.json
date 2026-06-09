@@ -1,7 +1,9 @@
 {
   "name": "@repo/logger",
   "version": "1.0.0",
-  "scripts": {},
+  "scripts": {
+    "build": "tsup"
+  },
   "devDependencies": {
     "@repo/eslint-config": "workspace:*",
     "@repo/typescript-config": "workspace:*",

@@ -28,6 +28,7 @@
     "dotenv-cli": "^11.0.0",
     "express": "^5.2.1",
     "ioredis": "^5.11.0",
-    "trpc-monorepo": "link:"
+    "trpc-monorepo": "link:",
+    "tsup": "^8.5.1"
   }
 }

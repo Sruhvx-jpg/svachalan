@@ -20,7 +20,7 @@ jobs:
           username: ubuntu
           key: ${{ secrets.PRIVATE_KEY }}
           script: |
-            cd /home/ubuntu/Svachalan
+            cd ./svachalan
 
             git pull origin main
 

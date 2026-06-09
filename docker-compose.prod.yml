@@ -1,0 +1,46 @@
+services:
+  api:
+    build: .
+    container_name: svachalan-api
+    restart: unless-stopped
+    ports:
+      - "4000:4000"
+    env_file:
+      - .env
+    depends_on:
+      - redis
+    networks:
+      - svachalan-net
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.web
+    container_name: svachalan-web
+    restart: unless-stopped
+    ports:
+      - "3001:3001"
+    env_file:
+      - .env
+    depends_on:
+      - api
+    networks:
+      - svachalan-net
+
+  redis:
+    image: redis:8-alpine
+    container_name: svachalan-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - svachalan-net
+
+networks:
+  svachalan-net:
+    driver: bridge
+
+volumes:
+  redis-data:

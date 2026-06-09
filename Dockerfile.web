@@ -1,0 +1,14 @@
+FROM node:24-alpine
+
+WORKDIR /app
+
+COPY . .
+
+RUN corepack enable
+RUN pnpm install --frozen-lockfile
+
+RUN pnpm --filter tauri-app build
+
+EXPOSE 3001
+
+CMD ["pnpm", "--filter", "tauri-app", "start"]

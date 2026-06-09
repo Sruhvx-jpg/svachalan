@@ -98,6 +98,28 @@ This uses Turbo to run the workspace apps in parallel.
 
 - The repo uses Turborepo for workspace orchestration.
 - Shared `@repo/*` packages are consumed by the apps in `apps/`.
+
+## Deployment
+
+### Local Development
+```bash
+pnpm dev  # Runs API, Web, and Redis in development mode
+```
+
+### VPS / Production
+⚠️ **Important**: The Tauri desktop app only runs locally. For VPS deployment:
+
+1. **Use Docker Compose** (recommended):
+   ```bash
+   docker-compose -f docker-compose.prod.yml up -d
+   ```
+
+2. **Manual deployment**:
+   - API runs on port 4000
+   - Web frontend (tauri-app's Next.js) runs on port 3001
+   - Redis runs on port 6379
+
+See [VPS_DEPLOYMENT.md](./VPS_DEPLOYMENT.md) for full deployment instructions.
 - If you need to inspect app entry points, see:
   - `apps/api/src/index.ts`
   - `apps/web/app/page.tsx`

@@ -1,14 +1,24 @@
 FROM node:24-alpine
 
+# Install curl for healthchecks
+RUN apk add --no-cache curl
+
 WORKDIR /app
 
-COPY . .
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY apps/tauri-app ./apps/tauri-app
+COPY packages ./packages
 
 RUN corepack enable
-RUN pnpm install --frozen-lockfile
+RUN pnpm install --frozen-lockfile --prefer-offline
 
+# Build the Next.js app
 RUN pnpm --filter tauri-app build
 
 EXPOSE 3001
 
+# Set production environment
+ENV NODE_ENV=production
+
+# Start the Next.js server
 CMD ["pnpm", "--filter", "tauri-app", "start"]

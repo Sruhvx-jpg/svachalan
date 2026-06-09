@@ -9,25 +9,25 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
 
-steps:
-  - name: Checkout code
-    uses: actions/checkout@v4
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-  - name: Deploy to VPS
-    uses: appleboy/ssh-action@v1.0.3
-    with:
-      host: ${{ secrets.HOST }}
-      username: ubuntu
-      key: ${{ secrets.PRIVATE_KEY }}
-      script: |
-        cd /home/ubuntu/Svachalan
+      - name: Deploy to VPS
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.HOST }}
+          username: ubuntu
+          key: ${{ secrets.PRIVATE_KEY }}
+          script: |
+            cd /home/ubuntu/Svachalan
 
-        git pull origin main
+            git pull origin main
 
-        docker compose down
+            docker compose down
 
-        docker compose build
+            docker compose build
 
-        docker compose up -d
+            docker compose up -d
 
-        docker image prune -f
+            docker image prune -f

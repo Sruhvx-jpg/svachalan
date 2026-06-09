@@ -1,7 +1,7 @@
 const isProd = process.env.NODE_ENV === 'production';
 
 const internalHost = process.env.TAURI_DEV_HOST || 'localhost';
-const internalPort = process.env.TAURI_DEV_PORT || '3000';
+const internalPort = process.env.TAURI_DEV_PORT || '3001';
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {

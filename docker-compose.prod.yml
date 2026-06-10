@@ -7,8 +7,6 @@ services:
       - "4000:4000"
     env_file:
       - .env
-    depends_on:
-      - redis
     networks:
       - svachalan-net
 
@@ -34,21 +32,8 @@ services:
       retries: 3
     networks:
       - svachalan-net
-
-  redis:
-    image: redis:8-alpine
-    container_name: svachalan-redis
-    restart: unless-stopped
-    ports:
-      - "6379:6379"
-    volumes:
-      - redis-data:/data
-    networks:
-      - svachalan-net
-
 networks:
   svachalan-net:
     driver: bridge
 
-volumes:
-  redis-data:
+

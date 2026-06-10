@@ -11,11 +11,11 @@ type TokenPayload = JwtPayload & {
 };
 
 const generateRefTok = (payload: payload) => {
-    return jwt.sign({...payload, type: "refresh"}, process.env.JWT_REFRESH_SECRET!, {expiresIn: "30d"})
+    return jwt.sign({...payload, type: "refresh"}, process.env.JWT_REFRESH_SECRET!, {expiresIn: "60d"})
 }
 
 const generateAccTok = (payload: payload) => {
-    return jwt.sign({...payload, type: "access"}, process.env.JWT_ACCESS_SECRET!, {expiresIn: "15m"})
+    return jwt.sign({...payload, type: "access"}, process.env.JWT_ACCESS_SECRET!, {expiresIn: "1d"})
 }
 
 const verifyAccTok = (token: string): TokenPayload => {

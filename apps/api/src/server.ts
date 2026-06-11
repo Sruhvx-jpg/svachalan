@@ -1,6 +1,7 @@
 import express from "express";
 import { logger } from "@repo/logger";
 import cors from "cors";
+import cookieParser from "cookie-parser";
 import "dotenv/config"
 
 import * as trpcExpress from "@trpc/server/adapters/express";
@@ -18,23 +19,17 @@ const openApiDocument = generateOpenApiDocument(serverRouter, {
   baseUrl: env.BASE_URL.concat("/api"),
 })
 
+// Configure CORS - accept from everywhere
 app.use(
   cors({
-    origin: process.env.CORS_ORIGIN,
+    origin: true,
     credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
     allowedHeaders: ["Content-Type", "trpc-accept"],
   }),
 );
 
-if (env.NODE_ENV !== "prod") {
-  app.use(
-    cors({
-      origin: "*",
-    }),
-  );
-}
-
+app.use(cookieParser());
 app.use(express.json())
 
 app.get("/", (req, res) => {

@@ -2,9 +2,11 @@ import { initTRPC, TRPCError } from "@trpc/server";
 import { OpenApiMeta } from "trpc-to-openapi";
 
 import { createContext } from "./context";
+import {  redis, verifyAccTok } from "../../utils";
+import { getAuthToken } from "./utils/cookie";
+import { logger } from "../../logger";
 
-import { redis } from "../utils/initRedis"
-import {verifyAccTok} from "../utils/jwtUtils"
+
 
 
 //++++++++++++ This file has middle integrateed for procedures +++++++++++++++
@@ -43,8 +45,8 @@ const fixedWindowRateLimiter = tRPCContext.middleware(async ({ctx, next}: any) =
   return next();
 })
 
-const verifyToken = tRPCContext.middleware(async ({ ctx, next }: any) => {
-  const token = ctx.getAuthToken()
+const verifyToken = tRPCContext.middleware(async ({ ctx, next }) => {
+  const token = getAuthToken(ctx)
 
   if (!token) {
     throw new TRPCError({

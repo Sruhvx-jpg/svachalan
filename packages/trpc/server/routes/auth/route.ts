@@ -1,10 +1,18 @@
 import { TRPCError } from "@trpc/server";
-import { z, zodUndefinedModel } from "../../schema";
 import { userService } from "../../services";
-import { publicProcedure, router } from "../../trpc";
-import { setAuthToken } from "../../utils/cookie";
+
+import { getAuthToken, setAuthToken } from "../../utils/cookie";
 import { generatePath } from "../../utils/path-generator";
-import { loginUserInputModel, loginUserOutputModel, registerUserInputModel, registerUserOutputModel } from "./model";
+
+
+import { publicProcedure, 
+        router, 
+        TokenBasedProcedure } from "../../trpc";
+import { getMeOutputModel, loginUserInputModel,
+   loginUserOutputModel,
+    registerUserInputModel, 
+    registerUserOutputModel } from "./model";
+import { verifyAccTok } from "../../../../utils";
 
 const TAGS = ["Authentication"];
 const getPath = generatePath("/authentication");
@@ -13,7 +21,7 @@ export const authRouter = router({
   //==================================================== register router =============================================
   registerUser: publicProcedure.meta({
     openapi: {
-      method: "POST", path: getPath("login"), tags: TAGS
+      method: "POST", path: getPath("Register"), tags: TAGS
     }
   }).input(registerUserInputModel).output(registerUserOutputModel).mutation(async ({ input, ctx }) => {
     try {
@@ -54,6 +62,19 @@ export const authRouter = router({
         message: error instanceof Error ? error.message : "login user route error"
       })
     }
+  }),
+
+  //========================================= getMe route ==========================================
+  getMe: TokenBasedProcedure.meta({
+    openapi: {
+      method: "GET", tags: TAGS, path: getPath("getMe")
+    }
+  }).output(getMeOutputModel).query(async({ctx}) => {
+    const userId = ctx.user.sub
+
+    const data = await userService.getMe(userId)
+
+    return data
   })
   //end
 })

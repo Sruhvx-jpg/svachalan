@@ -8,7 +8,7 @@ type payload = {
 type TokenPayload = JwtPayload & {
   sub: string;
   type: "access" | "refresh";
-};
+}
 
 const generateRefTok = (payload: payload) => {
     return jwt.sign({...payload, type: "refresh"}, process.env.JWT_REFRESH_SECRET!, {expiresIn: "60d"})

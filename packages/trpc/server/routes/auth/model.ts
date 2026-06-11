@@ -22,3 +22,8 @@ export const loginUserOutputModel = z.object({
     fullName: z.string().describe("user's fullname"),
     email: z.string().describe("user's email address"),
 })
+//============================== getMe output model ==============================================
+export const getMeOutputModel = z.object({
+  fullName: z.string().describe("user's account fullname"),
+  email: z.string().describe("user's account fullname"),
+});

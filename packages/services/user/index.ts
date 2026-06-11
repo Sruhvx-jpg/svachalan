@@ -52,12 +52,12 @@ class UserService {
     }
   }
 
-  private async saveRefreshToken(userId: string,refreshToken: string) {
+  private async saveRefreshToken(userId: string, refreshToken: string) {
     try {
 
       const hashedRefTok = await hashIT(refreshToken)
       const expiresAt = new Date(Date.now() + + 60 * 24 * 60 * 60 * 1000)
-      await db.insert(refreshTokensTable).values({userId, tokenHash: hashedRefTok,expiresAt});
+      await db.insert(refreshTokensTable).values({ userId, tokenHash: hashedRefTok, expiresAt });
     } catch (error) {
       throw new Error(`saveRefreshToken failed: ${error instanceof Error ? error.message : String(error)}`,);
     }
@@ -65,9 +65,9 @@ class UserService {
 
   // ========================================= public methods ======================================================
 
-  public async RegisterUser(payload: vanillaRegisterUserInputModelType ) {
+  public async RegisterUser(payload: vanillaRegisterUserInputModelType) {
     try {
-      const { fullName, email, password } =  await vanillaRegisterUserInputModel.parseAsync(payload);
+      const { fullName, email, password } = await vanillaRegisterUserInputModel.parseAsync(payload);
 
       const existingUser = await this.getUserByEmail(email);
 
@@ -77,55 +77,72 @@ class UserService {
 
       const hashedPassword = await hashIT(password);
 
-      const user = await this.createUser( fullName, email, hashedPassword, );
-      if(!user) throw apiErr.unknownErr("user not returned")
+      const user = await this.createUser(fullName, email, hashedPassword,);
+      if (!user) throw apiErr.unknownErr("user not returned")
 
-      const tokenPayload = {sub: user.id}
+      const tokenPayload = { sub: user.id }
       const accessToken = generateAccTok(tokenPayload);
       const refreshToken = generateRefTok(tokenPayload);
 
-      await this.saveRefreshToken(user.id,refreshToken,);
+      await this.saveRefreshToken(user.id, refreshToken,);
 
-      return { fullName: user.fullName, email: user.email,accessToken};
+      return { fullName: user.fullName, email: user.email, accessToken };
     } catch (error) {
       throw new Error(
-        `RegisterUser failed: ${error instanceof Error ? error.message : String(error)}`, );
+        `${error instanceof Error ? error.message : String(error)}`,);
     }
   }
 
-  public async loginUser(
-  payload: vanillaloginUserInputModelType,
-) {
-  try {
-    const { email, password } = await vanillaloginUserInputModel.parseAsync(payload,);
+  public async loginUser(payload: vanillaloginUserInputModelType,) {
+    try {
+      const { email, password } = await vanillaloginUserInputModel.parseAsync(payload,);
 
-    const user = await this.getUserByEmail(email);
+      const user = await this.getUserByEmail(email);
 
-    if (!user) {
-      throw apiErr.dataNotFound("invalid email or password");
+      if (!user) {
+        throw apiErr.dataNotFound("invalid email or password");
+      }
+
+      const isPasswordValid = await comparePass(password, user.password,);
+
+      if (!isPasswordValid) {
+        throw apiErr.dataNotFound("invalid email or password",);
+      }
+
+      const tokenPayload = { sub: user.id };
+
+      const accessToken = generateAccTok(tokenPayload)
+
+      const refreshToken = generateRefTok(tokenPayload)
+
+      await this.saveRefreshToken(user.id, refreshToken,)
+
+      return { fullName: user.fullName, email: user.email, accessToken, }
+    } catch (error) {
+      if (error instanceof Error) { throw error; }
+
+      throw new Error(`loginUser failed: ${String(error)}`,)
     }
-
-    const isPasswordValid = await comparePass(password,user.password,);
-
-    if (!isPasswordValid) {
-      throw apiErr.dataNotFound("invalid email or password",);
-    }
-
-    const tokenPayload = {sub: user.id};
-
-    const accessToken = generateAccTok(tokenPayload)
-
-    const refreshToken = generateRefTok(tokenPayload)
-
-    await this.saveRefreshToken(user.id,refreshToken,)
-
-    return {fullName: user.fullName,email: user.email,accessToken,}
-  } catch (error) {
-    if (error instanceof Error) {throw error;}
-
-    throw new Error(`loginUser failed: ${String(error)}`,)
   }
-}
+
+  //=========================================== getme service =============================================
+  public async getMe(userId: string) {
+    try {
+      if (!userId) throw apiErr.unauthorizedAccess("Invalid user id");
+
+      const [user] = await db.select({
+        fullName: usersTable.fullName,
+        email: usersTable.email
+      }).from(usersTable).where(eq(usersTable.id, userId))
+
+      if (!user) throw apiErr.dataNotFound("user not found")
+
+      return user
+    } catch (error) {
+      if (error instanceof Error) throw error
+      throw new Error("Failed to fetch user")
+    }
+  }
   // end
 }
 

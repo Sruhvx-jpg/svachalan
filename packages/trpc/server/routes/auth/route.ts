@@ -1,7 +1,7 @@
 import { TRPCError } from "@trpc/server";
 import { userService } from "../../services";
 
-import { getAuthToken, setAuthToken } from "../../utils/cookie";
+import {  setAuthToken } from "../../utils/cookie";
 import { generatePath } from "../../utils/path-generator";
 
 
@@ -12,7 +12,6 @@ import { getMeOutputModel, loginUserInputModel,
    loginUserOutputModel,
     registerUserInputModel, 
     registerUserOutputModel } from "./model";
-import { verifyAccTok } from "../../../../utils";
 
 const TAGS = ["Authentication"];
 const getPath = generatePath("/authentication");

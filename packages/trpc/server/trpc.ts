@@ -4,7 +4,6 @@ import { OpenApiMeta } from "trpc-to-openapi";
 import { createContext } from "./context";
 import {  redis, verifyAccTok } from "../../utils";
 import { getAuthToken } from "./utils/cookie";
-import { logger } from "../../logger";
 
 
 
@@ -75,3 +74,4 @@ const verifyToken = tRPCContext.middleware(async ({ ctx, next }) => {
 // procedures
 export const TokenBasedProcedure = tRPCContext.procedure.use(verifyToken)
 export const publicProcedure = tRPCContext.procedure;
+export const FWRLpublicProcedure = tRPCContext.procedure.use(fixedWindowRateLimiter)

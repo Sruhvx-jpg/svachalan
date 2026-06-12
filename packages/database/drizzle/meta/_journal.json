@@ -15,6 +15,13 @@
       "when": 1781093449570,
       "tag": "0001_flawless_grey_gargoyle",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1781247751691,
+      "tag": "0002_supreme_sharon_ventura",
+      "breakpoints": true
     }
   ]
 }

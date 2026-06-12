@@ -1,8 +1,10 @@
 
 "use client";
 
+import { useRef } from "react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
@@ -17,13 +19,42 @@ import {
   EyeOff,
   GalleryVerticalEndIcon,
 } from "lucide-react";
+import gsap from "gsap"
+import { Send, Check } from "lucide-react"
 
 import { useSignup } from "../../app/hooks/api/auth/useRegister";
+
+import { Spline_Sans, Yatra_One } from "next/font/google";
+
+const splineSans = Spline_Sans({
+  subsets: ["latin"],
+});
+
+const yatraOne = Yatra_One({
+  subsets: ["latin", "devanagari"],
+  weight: "400",
+});
 
 export function SignupForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
+  const sweepRef = useRef<HTMLDivElement>(null);
+
+  const handleEnter = () => {
+    gsap.fromTo(
+      sweepRef.current,
+      {
+        x: "-250%",
+      },
+      {
+        x: "500%",
+        duration: 0.8,
+        ease: "power2.out",
+      }
+    );
+  };
+
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
 
@@ -72,9 +103,13 @@ export function SignupForm({
             </div>
 
             <div className="space-y-2">
-              <h1 className="text-3xl font-bold tracking-tight">
-                <span className="text-blue-400">Welcome to </span>
-                <span className="bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
+              <h1 className="text-2xl tracking-tight">
+                <span className={`${splineSans.className} font-semibold text-blue-400`}>
+                  Welcome back to
+                </span>{" "}
+                <span
+                  className={`${yatraOne.className} bg-linear-to-r text-3xl from-purple-300 to-purple-500 bg-clip-text text-transparent`}
+                >
                   स्वचालन
                 </span>
               </h1>
@@ -102,7 +137,7 @@ export function SignupForm({
               }
               placeholder="Dron Manish Rane"
               required
-              className="h-11 border-white/10 bg-white/5 text-white placeholder:text-slate-500"
+              className="h-11 border-white/10 bg-white/5 text-white placeholder:text-slate-500 focus-visible:blue-blue-300 focus-visible:ring-blue-300"
             />
           </Field>
 
@@ -123,7 +158,7 @@ export function SignupForm({
               }
               placeholder="example@xyz.com"
               required
-              className="h-11 border-white/10 bg-white/5 text-white placeholder:text-slate-500"
+              className="h-11 border-white/10 bg-white/5 text-white placeholder:text-slate-500 focus-visible:blue-blue-300 focus-visible:ring-blue-300"
             />
           </Field>
 
@@ -145,7 +180,7 @@ export function SignupForm({
                 }
                 placeholder="••••••••••••"
                 required
-                className="h-11 border-white/10 bg-white/5 pr-12 text-white placeholder:text-slate-500"
+                className="h-11 border-white/10 bg-white/5 pr-12 text-white placeholder:text-slate-500 focus-visible:blue-blue-300 focus-visible:ring-blue-300"
               />
 
               <button
@@ -179,11 +214,46 @@ export function SignupForm({
           <Button
             type="submit"
             disabled={status === "pending"}
-            className="h-11 w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:opacity-90"
+            onMouseEnter={handleEnter}
+            className="
+    relative
+    h-11
+    w-full
+    overflow-hidden
+    border-0
+    bg-gradient-to-r
+    from-blue-500
+    to-purple-600
+    text-white
+    transition-all
+    duration-300
+    hover:scale-[1.02]
+    hover:shadow-lg
+    hover:shadow-blue-500/25
+  "
           >
-            {status === "pending"
-              ? "Creating Account..."
-              : "Create Account"}
+            <div
+              ref={sweepRef}
+              className="
+      pointer-events-none
+      absolute
+      inset-y-0
+      -left-32
+      w-24
+      -skew-x-[20deg]
+      bg-white/10
+      blur-md
+    "
+              style={{
+                transform: "translateX(-250%)",
+              }}
+            />
+
+            <span className="relative z-10 font-medium tracking-wide">
+              {status === "pending"
+                ? "Creating Account..."
+                : "Create Account"}
+            </span>
           </Button>
 
           <div className="text-center text-sm text-slate-400">

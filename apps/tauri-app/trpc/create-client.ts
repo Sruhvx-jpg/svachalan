@@ -5,7 +5,7 @@ interface CreateTRPCHttpBatchClientClientOpts {
 }
 
 const getBaseUrl = () => {
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://api.svachalan.space";
   return apiUrl.replace(/\/$/, "");
 };
 

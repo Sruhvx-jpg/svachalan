@@ -12,6 +12,7 @@ import { serverRouter, createContext } from "@repo/trpc/server";
 
 import { env } from "./env";
 
+
 export const app = express();
 const openApiDocument = generateOpenApiDocument(serverRouter, {
   title: "Svachalan OpenAPI",

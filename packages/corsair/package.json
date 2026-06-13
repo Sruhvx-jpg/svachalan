@@ -1,22 +1,24 @@
 {
-  "name": "@repo/trpc",
+  "name": "@repo/corsair",
   "version": "1.0.0",
   "private": true,
   "devDependencies": {
     "@repo/eslint-config": "workspace:*",
     "@repo/typescript-config": "workspace:*",
-    "@types/jsonwebtoken": "^9.0.10",
+    "@types/pg": "^8.16.0",
     "dotenv-cli": "^11.0.0",
     "typescript": "^5.9.3"
   },
   "dependencies": {
-    "@repo/corsair": "workspace:*",
-    "@repo/services": "workspace:*",
+    "@corsair-dev/cli": "^0.1.19",
+    "@corsair-dev/gmail": "^0.1.4",
     "@trpc/client": "^11.8.1",
     "@trpc/server": "^11.8.1",
     "@types/express": "^5.0.6",
+    "corsair": "^0.1.76",
+    "drizzle-orm": "^0.45.1",
     "express": "^5.2.1",
-    "jsonwebtoken": "^9.0.3",
+    "pg": "^8.16.3",
     "trpc-to-openapi": "^3.1.0",
     "zod": "^4.3.5"
   }

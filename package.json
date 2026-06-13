@@ -23,6 +23,10 @@
     "node": ">=18"
   },
   "dependencies": {
+    "@corsair-dev/github": "^0.1.9",
+    "@corsair-dev/gmail": "^0.1.4",
+    "@corsair-dev/mcp": "^0.1.22",
+    "@types/pg": "^8.16.0",
     "bcryptjs": "^3.0.3",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
@@ -31,6 +35,8 @@
     "dotenv-cli": "^11.0.0",
     "express": "^5.2.1",
     "ioredis": "^5.11.0",
+    "openai": "^6.42.0",
+    "pg": "^8.16.3",
     "trpc-monorepo": "link:",
     "tsup": "^8.5.1"
   }

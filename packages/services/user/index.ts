@@ -89,7 +89,8 @@ class UserService {
       return { fullName: user.fullName, email: user.email, accessToken };
     } catch (error) {
       throw new Error(
-        `${error instanceof Error ? error.message : String(error)}`,);
+        `${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
 

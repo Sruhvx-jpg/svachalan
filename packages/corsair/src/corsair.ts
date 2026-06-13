@@ -35,8 +35,8 @@ export function ensureCorsairSetup() {
   setupPromise ??= setupCorsair(corsair, {
     credentials: {
       gmail: {
-        client_id: "699251162461-r8i62noeneo761b5li2agu9ee12rr3q9.apps.googleusercontent.com",
-        client_secret: "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",
+        client_id: process.env.CLIENT_CLIENT_ID!,
+        client_secret: process.env.CLIENT_CLIENT_SECRET!,
       },
     },
   });

@@ -20,7 +20,7 @@ import {
   GalleryVerticalEndIcon,
 } from "lucide-react";
 import gsap from "gsap"
-import { Send, Check } from "lucide-react"
+
 
 import { useSignup } from "../../app/hooks/api/auth/useRegister";
 

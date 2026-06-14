@@ -11,7 +11,8 @@ import { apiReference } from "@scalar/express-api-reference";
 import { serverRouter, createContext } from "@repo/trpc/server";
 
 import { env } from "./env";
-
+import { createBaseMcpServer, createMcpRouter } from "@corsair-dev/mcp";
+import {corsair} from "@repo/corsair"
 
 export const app = express();
 const openApiDocument = generateOpenApiDocument(serverRouter, {
@@ -36,6 +37,8 @@ app.use(express.json())
 app.get("/", (req, res) => {
   return res.json({ message: " is up and running..." });
 })
+
+app.use('/mcp', createMcpRouter(() => createBaseMcpServer({ corsair})))
 
 app.get("/health", (req, res) => {
   return res.json({ message: "Svachalan server is healthy", healthy: true });
@@ -69,10 +72,14 @@ app.use((req, res) => {
   res.status(404).json({ error: "Not found" });
 })
 
+app.listen(5000, ()=> console.log("MCP server is running on port 4000"))
+
 // global error handlers
 app.use((err: any, req: any, res: any, next: any) => {
   logger.error("Error:", err);
   res.status(err.status || 500).json({ error: err.message || "Internal server error" });
 })
+
+
 
 export default app;

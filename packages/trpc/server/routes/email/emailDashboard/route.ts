@@ -23,7 +23,6 @@ import {
 } from "./model";
 import { setupCorsair } from "corsair";
 
-
 const TAGS = ["Email"];
 const getPath = generatePath("Dashboard");
 const APP_URL = "http://localhost:3000"
@@ -31,39 +30,28 @@ const OAUTH_CALLBACK_URL = `${APP_URL}/api/auth/callback`
 
 export const emailRouter = router({
 
-  //==================================================== connect email =============================================
   connectEmail: TokenBasedProcedure.meta({
-    openapi: {
-      method: "POST", path: getPath("connect"), tags: TAGS,
-    }
+    openapi: { method: "POST", path: getPath("connect"), tags: TAGS }
   })
     .input(connectEmailInputModel)
     .output(connectEmailOutputModel)
     .mutation(async ({ input, ctx }) => {
       try {
-
         const { plugin } = input
-        const tenantId = ctx.user.sub
+        const userId = ctx.user.sub
 
         await ensureCorsairSetup()
+        await setupCorsair(corsair, { tenantId: userId }) // <-- this function makes the corsair_account with tenantid only
 
-        // Generate OAuth URL
         const { url, state } = await generateOAuthUrl(corsair, plugin, {
-          tenantId,
+          tenantId: userId,
           redirectUri: OAUTH_CALLBACK_URL,
         })
-
-        await setupCorsair(corsair, {
-          tenantId: tenantId,
-        });
-
-
 
         if (!url || !state) {
           throw new Error(`Failed to generate OAuth URL for plugin: ${plugin}`)
         }
 
-        // Return URL and state - state will be stored in secure cookie by frontend
         return { url, state }
       } catch (error) {
         throw new TRPCError({
@@ -73,33 +61,27 @@ export const emailRouter = router({
       }
     }),
 
-  //==================================================== oauth callback =============================================
   oauthCallback: TokenBasedProcedure.meta({
-    openapi: {
-      method: "POST", path: getPath("oauthCallback"), tags: TAGS,
-    }
+    openapi: { method: "POST", path: getPath("oauthCallback"), tags: TAGS }
   })
     .input(callbackInputModel)
     .output(callbackOutputModel)
     .mutation(async ({ input, ctx }) => {
       try {
-        const { code, state, plugin, access_token, refresh_token } = input
-
-        // Verify state parameter (frontend should validate and pass it)
-        // In a real implementation, validate state from a temporary store
+        const { code, state, plugin } = input
+        const userId = ctx.user.sub
 
         await ensureCorsairSetup()
-        console.log(input)
 
-        const result = await processOAuthCallback(corsair, {
+        const result = await processOAuthCallback(corsair, { // <--- this function stores acc and ref token in config column
           code,
           state,
           redirectUri: OAUTH_CALLBACK_URL,
         })
-        console.log("result: ", result)
 
-
-
+        // ✅ Seed the DB right after OAuth completes
+        const tenant = await corsair.withTenant(userId)
+        await tenant.gmail.api.messages.list({ maxResults: 100 })
 
         return {
           success: true,
@@ -113,83 +95,75 @@ export const emailRouter = router({
       }
     }),
 
-  //==================================================== list emails =============================================
+  // ✅ GET + query (was GET + mutation)
   listEmails: TokenBasedProcedure.meta({
-    openapi: {
-      method: "GET", path: getPath("List"), tags: TAGS,
-    },
-  }).input(listEmailsInputModel).output(listEmailsOutputModel).query(async ({ input, ctx }) => {
-    try {
-      const { limit, offset } = input
-
-      const payload = {
-        userId: ctx.user.sub,
-        limit,
-        offset
+    openapi: { method: "GET", path: getPath("List"), tags: TAGS },
+  })
+    .input(listEmailsInputModel)
+    .output(listEmailsOutputModel)
+    .query(async ({ input, ctx }) => {
+      try {
+        const { limit, offset } = input
+        const emails = await emailService.listEmails({
+          userId: ctx.user.sub,
+          limit,
+          offset,
+        });
+        return { emails };
+      } catch (error) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: error instanceof Error ? error.message : "list emails route failed",
+        });
       }
+    }),
 
-      const emails = await emailService.listEmails(payload);
-
-      return { emails };
-    } catch (error) {
-      throw new TRPCError({
-        code: "INTERNAL_SERVER_ERROR",
-        message: error instanceof Error ? error.message : "list emails route failed",
-      });
-    }
-  }),
-
-  //==================================================== dashboard stats =============================================
   getDashboardStats: TokenBasedProcedure.meta({
-    openapi: {
-      method: "GET", path: getPath("Stats"), tags: TAGS,
-    },
-  }).input(z.void()).output(dashboardStatsOutputModel).query(async ({ ctx }) => {
-    try {
-      const stats = await emailService.getDashboardStats(ctx.user.sub);
+    openapi: { method: "GET", path: getPath("Stats"), tags: TAGS },
+  })
+    .input(z.void())
+    .output(dashboardStatsOutputModel)
+    .query(async ({ ctx }) => {
+      try {
+        return await emailService.getDashboardStats(ctx.user.sub);
+      } catch (error) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: error instanceof Error ? error.message : "get dashboard stats route failed",
+        });
+      }
+    }),
 
-      return stats;
-    } catch (error) {
-      throw new TRPCError({
-        code: "INTERNAL_SERVER_ERROR",
-        message: error instanceof Error ? error.message : "get dashboard stats route failed",
-      });
-    }
-  }),
-
-  //==================================================== sync emails =============================================
+  // ✅ GET + query (was GET + mutation)
   syncEmails: TokenBasedProcedure.meta({
-    openapi: {
-      method: "POST", path: getPath("Sync"), tags: TAGS,
-    },
-  }).input(z.void()).output(syncOutputModel).mutation(async ({ ctx }) => {
-    try {
-      const result = await emailService.SyncEmails(ctx.user.sub);
+    openapi: { method: "GET", path: getPath("Sync"), tags: TAGS },
+  })
+    .input(z.void())
+    .output(syncOutputModel)
+    .query(async ({ ctx }) => {
+      try {
+        return await emailService.SyncEmails(ctx.user.sub);
+      } catch (error) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: error instanceof Error ? error.message : "sync emails route failed",
+        });
+      }
+    }),
 
-      return result;
-    } catch (error) {
-      throw new TRPCError({
-        code: "INTERNAL_SERVER_ERROR",
-        message: error instanceof Error ? error.message : "sync emails route failed",
-      });
-    }
-  }),
-
-  //==================================================== connection status =============================================
   getConnectionStatus: TokenBasedProcedure.meta({
-    openapi: {
-      method: "GET", path: getPath("ConnectionStatus"), tags: TAGS,
-    },
-  }).input(z.void()).output(connectionStatusOutputModel).query(async ({ ctx }) => {
-    try {
-      const status = await emailService.GetConnectionStatus(ctx.user.sub);
-
-      return status;
-    } catch (error) {
-      throw new TRPCError({
-        code: "INTERNAL_SERVER_ERROR",
-        message: error instanceof Error ? error.message : "get connection status route failed",
-      });
-    }
-  }),
+    openapi: { method: "GET", path: getPath("ConnectionStatus"), tags: TAGS },
+  })
+    .input(z.void())
+    .output(connectionStatusOutputModel)
+    .query(async ({ ctx }) => {
+      try {
+        return await emailService.GetConnectionStatus(ctx.user.sub);
+      } catch (error) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: error instanceof Error ? error.message : "get connection status route failed",
+        });
+      }
+    }),
 });

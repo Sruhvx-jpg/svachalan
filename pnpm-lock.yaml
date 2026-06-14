@@ -16,7 +16,10 @@ importers:
         version: 0.1.4(@types/node@22.15.3)(corsair@0.1.76)(zod@4.3.5)
       '@corsair-dev/mcp':
         specifier: ^0.1.22
-        version: 0.1.22(openai@6.42.0(zod@4.3.5))
+        version: 0.1.22(@ai-sdk/mcp@1.0.50(zod@4.3.5))(openai@6.42.0(zod@4.3.5))
+      '@types/dotenv':
+        specifier: ^8.2.3
+        version: 8.2.3
       '@types/pg':
         specifier: ^8.16.0
         version: 8.16.0
@@ -171,7 +174,7 @@ importers:
         version: 1.17.0(react@19.2.0)
       next:
         specifier: 16.1.0
-        version: 16.1.0(@babel/core@7.29.7)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
+        version: 16.1.0(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       postcss:
         specifier: ^8.5.6
         version: 8.5.6
@@ -218,27 +221,51 @@ importers:
 
   packages/corsair:
     dependencies:
+      '@ai-sdk/google':
+        specifier: ^3.0.82
+        version: 3.0.82(zod@4.3.5)
+      '@ai-sdk/mcp':
+        specifier: ^1.0.50
+        version: 1.0.50(zod@4.3.5)
       '@corsair-dev/cli':
         specifier: ^0.1.19
         version: 0.1.19
       '@corsair-dev/gmail':
         specifier: ^0.1.4
         version: 0.1.4(@types/node@22.15.3)(corsair@0.1.76)(zod@4.3.5)
+      '@corsair-dev/googlecalendar':
+        specifier: ^0.1.4
+        version: 0.1.4(@types/node@22.15.3)(corsair@0.1.76)(zod@4.3.5)
+      '@corsair-dev/mcp':
+        specifier: ^0.1.22
+        version: 0.1.22(@ai-sdk/mcp@1.0.50(zod@4.3.5))(openai@6.42.0(zod@4.3.5))
       '@trpc/client':
         specifier: ^11.8.1
         version: 11.8.1(@trpc/server@11.8.1(typescript@5.9.3))(typescript@5.9.3)
       '@trpc/server':
         specifier: ^11.8.1
         version: 11.8.1(typescript@5.9.3)
+      '@types/dotenv':
+        specifier: ^8.2.3
+        version: 8.2.3
       '@types/express':
         specifier: ^5.0.6
         version: 5.0.6
+      ai:
+        specifier: ^6.0.205
+        version: 6.0.205(zod@4.3.5)
       corsair:
         specifier: ^0.1.76
         version: 0.1.76
+      dotenv:
+        specifier: ^17.2.3
+        version: 17.4.2
       drizzle-orm:
         specifier: ^0.45.1
-        version: 0.45.1(@types/pg@8.16.0)(kysely@0.28.17)(pg@8.16.3)
+        version: 0.45.1(@opentelemetry/api@1.9.1)(@types/pg@8.16.0)(kysely@0.28.17)(pg@8.16.3)
+      env:
+        specifier: ^0.0.2
+        version: 0.0.2
       express:
         specifier: ^5.2.1
         version: 5.2.1
@@ -275,7 +302,7 @@ importers:
         version: 17.2.3
       drizzle-orm:
         specifier: ^0.45.1
-        version: 0.45.1(@types/pg@8.16.0)(kysely@0.28.17)(pg@8.16.3)
+        version: 0.45.1(@opentelemetry/api@1.9.1)(@types/pg@8.16.0)(kysely@0.28.17)(pg@8.16.3)
       pg:
         specifier: ^8.16.3
         version: 8.16.3
@@ -474,6 +501,34 @@ importers:
         version: 5.9.3
 
 packages:
+
+  '@ai-sdk/gateway@3.0.131':
+    resolution: {integrity: sha512-CnjOZdywQaUnCyZ0N5wVNm7Sm63+NeHDVZQJKFX2IDq+t03SLwiiuoi3ILTLPlM+YSOhkQ/pvIDoR4qa98Zp5A==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      zod: ^3.25.76 || ^4.1.8
+
+  '@ai-sdk/google@3.0.82':
+    resolution: {integrity: sha512-md+M92ZJuPIMU2p4v1rGLpJJWTmTh/vpJPkMnQbEdcLaPTZxRaroIKSnmL/9UGJV0BORJlHNDJegkcnhVpTmDA==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      zod: ^3.25.76 || ^4.1.8
+
+  '@ai-sdk/mcp@1.0.50':
+    resolution: {integrity: sha512-iLqDZ62ezEjBhTJgiAQ4D2tHG1q7INVhPx0uOPnxJTxxqVUzN4KqeWAd6j5hYNhsPqC7TPGRQHQqAa1Z/lu2jg==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      zod: ^3.25.76 || ^4.1.8
+
+  '@ai-sdk/provider-utils@4.0.29':
+    resolution: {integrity: sha512-uhukHaCBvqkwBHkT8C2PrnqKTCoLn3pdHXqtcR9I8ErH+flbzgW4o7VHSNIup9LRu+WBvZIZDQLsx6rwl2tiOA==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      zod: ^3.25.76 || ^4.1.8
+
+  '@ai-sdk/provider@3.0.10':
+    resolution: {integrity: sha512-Q3BZ27qfpYqnCYGvE3vt+Qi6LGOF9R5Nmzn+9JoM1lCRsD9mYaIhfJLkSunN48nfGXJ6n+XNV0J/XVpqGQl7Dw==}
+    engines: {node: '>=18'}
 
   '@alloc/quick-lru@5.2.0':
     resolution: {integrity: sha512-UrcABB+4bUrFABwbluTIBErXwvbsU/V7TZWfmbgJfbkwiBuziS9gxdODUyuiecfdGQ85jglMW6juS3+z5TsKLw==}
@@ -756,6 +811,12 @@ packages:
 
   '@corsair-dev/gmail@0.1.4':
     resolution: {integrity: sha512-jaAa+NUzJtm0YWDFdcKgR4rm4vvm2ODe6dLXK/FHOxvCdcrrDhHEJ9mZArNcY+K8ieJnL/hXFSX9a2uzsDC5jg==}
+    peerDependencies:
+      corsair: '>=0.1.0'
+      zod: ^4.1.13
+
+  '@corsair-dev/googlecalendar@0.1.4':
+    resolution: {integrity: sha512-UqTjWivu6FhMBbZ6p9ZCb9AkA/ycsYzSGL7WU/Cam82O+OooDCROZBBGpqBbJ7Gs9jSacxGQ+MQAu6B9mp7GEw==}
     peerDependencies:
       corsair: '>=0.1.0'
       zod: ^4.1.13
@@ -1650,6 +1711,10 @@ packages:
     resolution: {integrity: sha512-oGB+UxlgWcgQkgwo8GcEGwemoTFt3FIO9ababBmaGwXIoBKZ+GTy0pP185beGg7Llih/NSHSV2XAs1lnznocSg==}
     engines: {node: '>= 8'}
 
+  '@opentelemetry/api@1.9.1':
+    resolution: {integrity: sha512-gLyJlPHPZYdAk1JENA9LeHejZe1Ti77/pTeFm/nMXmQH/HFZlcS/O2XJB+L8fkbrNSqhdtlvjBVjxwUYanNH5Q==}
+    engines: {node: '>=8.0.0'}
+
   '@radix-ui/number@1.1.2':
     resolution: {integrity: sha512-ceTwaxc4I5IOi97DgCotl3pqiyRGvffcc0oOsE2dQYaJOFIDsDt4VWG6xEbg1QePv9QWausCEIppud/tJ1wNig==}
 
@@ -2493,6 +2558,9 @@ packages:
   '@so-ric/colorspace@1.1.6':
     resolution: {integrity: sha512-/KiKkpHNOBgkFJwu9sh48LkHSMYGyuTcSFK/qMBdnOAlrRJzRSXAOFB5qwzaVQuDl8wAvHVMkaASQDReTahxuw==}
 
+  '@standard-schema/spec@1.1.0':
+    resolution: {integrity: sha512-l2aFy5jALhniG5HgqrD6jXLi/rUWrKvqN/qJx6yoJsgKhblVd+iqqU4RCXavm/jPityDo5TCvKMnpjKnOriy0w==}
+
   '@swc/core-darwin-arm64@1.15.8':
     resolution: {integrity: sha512-M9cK5GwyWWRkRGwwCbREuj6r8jKdES/haCZ3Xckgkl8MUQJZA3XB7IXXK1IXRNeLjg6m7cnoMICpXv1v1hlJOg==}
     engines: {node: '>=10'}
@@ -2794,6 +2862,10 @@ packages:
   '@types/cors@2.8.19':
     resolution: {integrity: sha512-mFNylyeyqN93lfe/9CSxOGREz8cpzAhH+E93xJ4xWQf62V8sQ/24reV2nyzUWM6H6Xji+GGHpkbLe7pVoUEskg==}
 
+  '@types/dotenv@8.2.3':
+    resolution: {integrity: sha512-g2FXjlDX/cYuc5CiQvyU/6kkbP1JtmGzh0obW50zD7OKeILVL0NSpPWLXVfqoAGQjom2/SLLx9zHq0KXvD6mbw==}
+    deprecated: This is a stub types definition. dotenv provides its own type definitions, so you do not need this installed.
+
   '@types/estree@1.0.8':
     resolution: {integrity: sha512-dWHzHa2WqEXI/O1E9OjrocMTKJl2mSrEolh1Iomrv6U+JuNwaHXsXx9bLu5gG7BUWFIN0skIQJQ/L1rIex4X6w==}
 
@@ -2927,6 +2999,10 @@ packages:
     resolution: {integrity: sha512-Xzmnb58+Db78gT/CCj/PVCvK+zxbnsw6F+O1oheYszJbBSdEjVhQi3C/Xttzxgi/GLmpvOggRs1RFpiJ8+c34Q==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
 
+  '@vercel/oidc@3.2.0':
+    resolution: {integrity: sha512-UycprH3T6n3jH0k44NHMa7pnFHGu/N05MjojYr+Mc6I7obkoLIJujSWwin1pCvdy/eOxrI/l3uDLQsmcrOb4ug==}
+    engines: {node: '>= 20'}
+
   '@vitejs/plugin-react@4.7.0':
     resolution: {integrity: sha512-gUu9hwfWvvEDBBmgtAowQCojwZmJ5mcLn3aufeCsitijs3+f2NsrPtlAWIR6OPiqljl96GVCUbLe0HyqIpVaoA==}
     engines: {node: ^14.18.0 || >=16.0.0}
@@ -2953,6 +3029,12 @@ packages:
   agent-base@7.1.4:
     resolution: {integrity: sha512-MnA+YT8fwfJPgBx3m60MNqakm30XOkyIoH1y6huTQvC0PwZG7ki8NacLBcrPbNoo8vEZy7Jpuk7+jMO+CUovTQ==}
     engines: {node: '>= 14'}
+
+  ai@6.0.205:
+    resolution: {integrity: sha512-F4akEGF41UdgJO3L4v+D5noVD1/czhJy6x0k9R/i1EXfxqrkBh/PdYSgRSLPiGFvrw76dzI8h4w3NYmLrTb8dw==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      zod: ^3.25.76 || ^4.1.8
 
   ajv-formats@3.0.1:
     resolution: {integrity: sha512-8iUql50EUR+uUcdRQ3HDqa6EVyo3docL8g5WJ3FNcWmu62IbkGUue/pEyLBW8VGKKucTPgqeks4fIU1DA4yowQ==}
@@ -3652,6 +3734,10 @@ packages:
   env-paths@2.2.1:
     resolution: {integrity: sha512-+h1lkLKhZMTYjog1VEpJNG7NZJWcuc2DDk/qsqSTRRCOXiLjeQ1d1/udrUGhqMxUgAlwKNZ0cf2uqan5GLuS2A==}
     engines: {node: '>=6'}
+
+  env@0.0.2:
+    resolution: {integrity: sha512-yP8LfjO4ughSHD/3HgLPinWzexmaOGvRfs2TFx0SZhOm7j1xPi9evjuGcLiNVHIGLmcsgMak4eDbBzlYqGIVxw==}
+    engines: {node: '>= 0.5.9'}
 
   error-ex@1.3.4:
     resolution: {integrity: sha512-sqQamAnR14VgCr1A618A3sGrygcpK+HEbenA/HiEAkkUwcZIIB/tgWqHFxWgOyDh4nB4JCRimh79dR5Ywc9MDQ==}
@@ -4548,6 +4634,9 @@ packages:
 
   json-schema-typed@8.0.2:
     resolution: {integrity: sha512-fQhoXdcvc3V28x7C7BMs4P5+kNlgUURe2jmUT1T//oBRMDrqy1QPelJimwZGo7Hg9VPV3EQV5Bnq4hbFy2vetA==}
+
+  json-schema@0.4.0:
+    resolution: {integrity: sha512-es94M3nTIfsEPisRafak+HDLfHXnKBhV3vU5eqPcS3flIWqcxJWgXHXiey3YrpaNsanY5ei1VoYEbOzijuq9BA==}
 
   json-stable-stringify-without-jsonify@1.0.1:
     resolution: {integrity: sha512-Bdboy+l7tA3OGW6FjyFHWkP5LuByj1Tk33Ljyq0axyzdk9//JSi2u3fP1QSmd1KNwq6VOKYGlAu87CisVir6Pw==}
@@ -6091,6 +6180,37 @@ packages:
 
 snapshots:
 
+  '@ai-sdk/gateway@3.0.131(zod@4.3.5)':
+    dependencies:
+      '@ai-sdk/provider': 3.0.10
+      '@ai-sdk/provider-utils': 4.0.29(zod@4.3.5)
+      '@vercel/oidc': 3.2.0
+      zod: 4.3.5
+
+  '@ai-sdk/google@3.0.82(zod@4.3.5)':
+    dependencies:
+      '@ai-sdk/provider': 3.0.10
+      '@ai-sdk/provider-utils': 4.0.29(zod@4.3.5)
+      zod: 4.3.5
+
+  '@ai-sdk/mcp@1.0.50(zod@4.3.5)':
+    dependencies:
+      '@ai-sdk/provider': 3.0.10
+      '@ai-sdk/provider-utils': 4.0.29(zod@4.3.5)
+      pkce-challenge: 5.0.1
+      zod: 4.3.5
+
+  '@ai-sdk/provider-utils@4.0.29(zod@4.3.5)':
+    dependencies:
+      '@ai-sdk/provider': 3.0.10
+      '@standard-schema/spec': 1.1.0
+      eventsource-parser: 3.1.0
+      zod: 4.3.5
+
+  '@ai-sdk/provider@3.0.10':
+    dependencies:
+      json-schema: 0.4.0
+
   '@alloc/quick-lru@5.2.0': {}
 
   '@babel/code-frame@7.29.7':
@@ -6460,13 +6580,26 @@ snapshots:
       - supports-color
       - ts-node
 
-  '@corsair-dev/mcp@0.1.22(openai@6.42.0(zod@4.3.5))':
+  '@corsair-dev/googlecalendar@0.1.4(@types/node@22.15.3)(corsair@0.1.76)(zod@4.3.5)':
+    dependencies:
+      corsair: 0.1.76
+      jest: 29.7.0(@types/node@22.15.3)
+      zod: 4.3.5
+    transitivePeerDependencies:
+      - '@types/node'
+      - babel-plugin-macros
+      - node-notifier
+      - supports-color
+      - ts-node
+
+  '@corsair-dev/mcp@0.1.22(@ai-sdk/mcp@1.0.50(zod@4.3.5))(openai@6.42.0(zod@4.3.5))':
     dependencies:
       '@modelcontextprotocol/sdk': 1.29.0(zod@4.3.5)
       corsair: 0.1.75
       express: 4.22.2
       zod: 4.3.5
     optionalDependencies:
+      '@ai-sdk/mcp': 1.0.50(zod@4.3.5)
       openai: 6.42.0(zod@4.3.5)
     transitivePeerDependencies:
       - '@cfworker/json-schema'
@@ -6482,7 +6615,7 @@ snapshots:
   '@dotenvx/dotenvx@1.71.2':
     dependencies:
       commander: 11.1.0
-      dotenv: 17.2.3
+      dotenv: 17.4.2
       eciesjs: 0.4.18
       enquirer: 2.4.1
       execa: 5.1.1
@@ -7199,6 +7332,8 @@ snapshots:
     dependencies:
       '@nodelib/fs.scandir': 2.1.5
       fastq: 1.19.1
+
+  '@opentelemetry/api@1.9.1': {}
 
   '@radix-ui/number@1.1.2': {}
 
@@ -8052,6 +8187,8 @@ snapshots:
       color: 5.0.3
       text-hex: 1.0.0
 
+  '@standard-schema/spec@1.1.0': {}
+
   '@swc/core-darwin-arm64@1.15.8':
     optional: true
 
@@ -8309,6 +8446,10 @@ snapshots:
     dependencies:
       '@types/node': 22.15.3
 
+  '@types/dotenv@8.2.3':
+    dependencies:
+      dotenv: 17.4.2
+
   '@types/estree@1.0.8': {}
 
   '@types/express-serve-static-core@5.1.0':
@@ -8483,6 +8624,8 @@ snapshots:
       '@typescript-eslint/types': 8.50.0
       eslint-visitor-keys: 4.2.1
 
+  '@vercel/oidc@3.2.0': {}
+
   '@vitejs/plugin-react@4.7.0(vite@7.3.5(@types/node@22.15.3)(jiti@2.6.1)(lightningcss@1.30.2)(tsx@4.21.0)(yaml@2.8.2))':
     dependencies:
       '@babel/core': 7.29.7
@@ -8512,6 +8655,14 @@ snapshots:
   acorn@8.15.0: {}
 
   agent-base@7.1.4: {}
+
+  ai@6.0.205(zod@4.3.5):
+    dependencies:
+      '@ai-sdk/gateway': 3.0.131(zod@4.3.5)
+      '@ai-sdk/provider': 3.0.10
+      '@ai-sdk/provider-utils': 4.0.29(zod@4.3.5)
+      '@opentelemetry/api': 1.9.1
+      zod: 4.3.5
 
   ajv-formats@3.0.1(ajv@8.20.0):
     optionalDependencies:
@@ -9084,7 +9235,7 @@ snapshots:
   dotenv-cli@11.0.0:
     dependencies:
       cross-spawn: 7.0.6
-      dotenv: 17.2.3
+      dotenv: 17.4.2
       dotenv-expand: 12.0.3
       minimist: 1.2.8
 
@@ -9109,8 +9260,9 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  drizzle-orm@0.45.1(@types/pg@8.16.0)(kysely@0.28.17)(pg@8.16.3):
+  drizzle-orm@0.45.1(@opentelemetry/api@1.9.1)(@types/pg@8.16.0)(kysely@0.28.17)(pg@8.16.3):
     optionalDependencies:
+      '@opentelemetry/api': 1.9.1
       '@types/pg': 8.16.0
       kysely: 0.28.17
       pg: 8.16.3
@@ -9157,6 +9309,8 @@ snapshots:
       strip-ansi: 6.0.1
 
   env-paths@2.2.1: {}
+
+  env@0.0.2: {}
 
   error-ex@1.3.4:
     dependencies:
@@ -10478,6 +10632,8 @@ snapshots:
 
   json-schema-typed@8.0.2: {}
 
+  json-schema@0.4.0: {}
+
   json-stable-stringify-without-jsonify@1.0.1: {}
 
   json5@2.2.3: {}
@@ -10739,7 +10895,7 @@ snapshots:
 
   negotiator@1.0.0: {}
 
-  next@16.1.0(@babel/core@7.29.7)(react-dom@19.2.0(react@19.2.0))(react@19.2.0):
+  next@16.1.0(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(react-dom@19.2.0(react@19.2.0))(react@19.2.0):
     dependencies:
       '@next/env': 16.1.0
       '@swc/helpers': 0.5.15
@@ -10758,6 +10914,7 @@ snapshots:
       '@next/swc-linux-x64-musl': 16.1.0
       '@next/swc-win32-arm64-msvc': 16.1.0
       '@next/swc-win32-x64-msvc': 16.1.0
+      '@opentelemetry/api': 1.9.1
       sharp: 0.34.5
     transitivePeerDependencies:
       - '@babel/core'

@@ -10,7 +10,7 @@ export default function OAuthCallbackHandler() {
   const [error, setError] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(true);
 
-  const callbackMutation = trpc.Email.connectEmail.useMutation({
+  const callbackMutation = trpc.Email.oauthCallback.useMutation({
     onSuccess: () => {
       router.push("/main?connected=true");
     },
@@ -34,6 +34,8 @@ export default function OAuthCallbackHandler() {
     // Call the tRPC mutation to complete the OAuth flow
     callbackMutation.mutate({
       plugin,
+      code,
+      state
     });
   }, [searchParams, callbackMutation]);
 

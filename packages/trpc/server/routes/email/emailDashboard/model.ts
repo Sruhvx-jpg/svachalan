@@ -48,8 +48,6 @@ export const callbackInputModel = z.object({
   code: z.string().describe("Authorization code from OAuth provider"),
   state: z.string().describe("State parameter for CSRF protection"),
   plugin: z.string().describe("The plugin that was used"),
-  access_token: z.string(),
-  refresh_token: z.string()
 });
 
 export const callbackOutputModel = z.object({

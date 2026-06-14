@@ -11,6 +11,7 @@ import type { GmailSchema } from "@corsair-dev/gmail"
 //in house modules/packages
 import { corsair, ensureCorsairSetup, getTenant } from "@repo/corsair"
 import { listEmailsInputModel, listEmailsInputModelType } from "./model"
+
 //current working directory files
 
 type GmailMessageSchema = (typeof GmailSchema)["entities"]["messages"]
@@ -18,38 +19,53 @@ type EmailMessage = TypedEntity<GmailMessageSchema>
 type GmailConnectionState = "connected" | "not_connected" | "missing_credentials"
 
 export interface DashboardStats {
-  totalEmails: number;
-  unreadCount: number;
-  spamCount: number;
-  todayCount: number;
+    totalEmails: number;
+    unreadCount: number;
+    spamCount: number;
+    todayCount: number;
 }
 
 export interface EmailSummary {
-  id: string;
-  subject: string;
-  from: string;
-  date: string;
-  snippet: string;
-  isRead: boolean;
-  isSpam: boolean;
+    id: string;
+    subject: string;
+    from: string;
+    date: string;
+    snippet: string;
+    isRead: boolean;
+    isSpam: boolean;
 }
 
 export interface ConnectEmailResult {
-  url: string;
-  state: string;
+    url: string;
+    state: string;
 }
 
 export interface ConnectionStatusResult {
-  connected: boolean;
-  signInUrl?: string;
+    connected: boolean;
+    signInUrl?: string;
 }
 
 class EmailService {
     //================================= private methodds ====================================
     private async fetchMails(userId: string, limit: number, offset: number): Promise<EmailMessage[]> {
         try {
-            const tenant = getTenant(userId)
-            return await tenant.gmail.db.messages.search({ limit, offset })
+            await ensureCorsairSetup()
+            const tenant = await getTenant(userId)
+
+            const dbMsgs = await tenant.gmail.db.messages.list({ limit, offset })
+
+            const liveMsgs = await Promise.all(
+                dbMsgs.map(async (msg) => {
+                    try {
+                        const liveData = await tenant.gmail.api.messages.get({ id: msg.entity_id });
+                        return { ...msg, data: liveData } as EmailMessage;
+                    } catch (err) {
+                        return msg;
+                    }
+                })
+            );
+
+            return liveMsgs;
         } catch (error) {
             throw new Error(
                 `fetchMessages failed: ${error instanceof Error ? error.message : String(error)}`
@@ -59,8 +75,21 @@ class EmailService {
 
     private async fetchAllMails(userId: string): Promise<EmailMessage[]> {
         try {
-            const tenant = getTenant(userId)
-            return await tenant.gmail.db.messages.search({ limit: 500 })
+            await ensureCorsairSetup()
+            const tenant = await getTenant(userId)
+            const dbMsgs = await tenant.gmail.db.messages.list({ limit: 100 })
+
+            const liveMsgs = await Promise.all(
+                dbMsgs.map(async (msg) => {
+                    try {
+                        const liveData = await tenant.gmail.api.messages.get({ id: msg.entity_id });
+                        return { ...msg, data: liveData } as EmailMessage;
+                    } catch (err) {
+                        return msg;
+                    }
+                })
+            );
+            return liveMsgs;
         } catch (error) {
             throw new Error(
                 `fetchMessages failed: ${error instanceof Error ? error.message : String(error)}`
@@ -72,7 +101,7 @@ class EmailService {
         try {
             await ensureCorsairSetup()
             const status = await corsair.manage.connectionStatus.get({ tenantId: userId })
-            return status.gmail as GmailConnectionState
+            return await status.gmail as GmailConnectionState
         } catch (error) {
             throw new Error(
                 `getGmailConnectionState failed: ${error instanceof Error ? error.message : String(error)}`
@@ -94,8 +123,16 @@ class EmailService {
 
     private async triggerGmailSync(userId: string): Promise<void> {
         try {
-            const tenant = getTenant(userId)
-            await tenant.gmail.api.messages.list({ maxResults: 100 })
+            await ensureCorsairSetup()
+            const tenant = await getTenant(userId)
+            const listRes = await tenant.gmail.api.messages.list({ maxResults: 100 }) as any;
+            const messages = listRes.messages || [];
+
+            await Promise.all(
+                messages.map((msg: any) =>
+                    msg.id ? tenant.gmail.api.messages.get({ id: msg.id }) : Promise.resolve()
+                )
+            );
         } catch (error) {
             throw new Error(
                 `triggerGmailSync failed: ${error instanceof Error ? error.message : String(error)}`
@@ -104,13 +141,18 @@ class EmailService {
     }
 
     private mapToEmailSummary(msg: EmailMessage): EmailSummary {
-        const labels = msg.data?.labelIds ?? []
+
+        const labels = msg.data?.labelIds ?? [];
+        const headers = msg.data?.payload?.headers ?? [];
+
+        const getHeader = (name: string) =>
+            headers.find((h: any) => h.name.toLowerCase() === name.toLowerCase())?.value;
 
         return {
             id: msg.entity_id,
-            subject: msg.data?.subject ?? "(no subject)",
-            from: msg.data?.from ?? "",
-            date: msg.data?.internalDate ?? msg.created_at.toISOString(),
+            subject: getHeader("subject") ?? "(no subject)",
+            from: getHeader("from") ?? "",
+            date: msg.data?.internalDate ? new Date(Number(msg.data.internalDate)).toISOString() : msg.created_at.toISOString(),
             snippet: msg.data?.snippet ?? "",
             isRead: !labels.includes("UNREAD"),
             isSpam: labels.includes("SPAM"),
@@ -133,7 +175,7 @@ class EmailService {
 
             const dateStr = msg.data?.internalDate
 
-            if (dateStr && new Date(dateStr) >= today) todayCount++
+            if (dateStr && new Date(Number(dateStr)) >= today) todayCount++
         }
 
         return { totalEmails: mails.length, unreadCount, spamCount, todayCount }
@@ -176,7 +218,7 @@ class EmailService {
 
     public async SyncEmails(userId: string): Promise<{ success: boolean }> {
         try {
-            await this.triggerGmailSync(userId)
+            const res = await this.triggerGmailSync(userId)
             return { success: true }
         } catch (error) {
             throw new Error(

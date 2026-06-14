@@ -26,6 +26,7 @@
     "@corsair-dev/github": "^0.1.9",
     "@corsair-dev/gmail": "^0.1.4",
     "@corsair-dev/mcp": "^0.1.22",
+    "@types/dotenv": "^8.2.3",
     "@types/pg": "^8.16.0",
     "bcryptjs": "^3.0.3",
     "cookie-parser": "^1.4.7",

@@ -21,11 +21,23 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    // Store the code and state temporarily (could be in session/cookie)
-    // Then redirect back to the app with these params
+    // --- EXTRACT PLUGIN FROM STATE ---
+    let extractedPlugin = "";
+    try {
+      // Split by '.' to drop any attached cryptographic signature hashes
+      const base64Payload = state.split(".")[0];
+      // Decode base64 to plain text string and parse to JSON
+      const decodedState = JSON.parse(atob(base64Payload));
+      
+      extractedPlugin = decodedState.plugin || ""; 
+    } catch (e) {
+      console.error("Failed to safely decode plugin state string:", e);
+    }
+
+    // Pass the safely extracted plugin name into your next redirect handler route
     const response = NextResponse.redirect(
       new URL(
-        `/auth/callback-handler?code=${code}&state=${state}&plugin=gmail`,
+        `/auth/callback-handler?code=${code}&state=${encodeURIComponent(state)}&plugin=${extractedPlugin}`,
         request.url
       )
     );

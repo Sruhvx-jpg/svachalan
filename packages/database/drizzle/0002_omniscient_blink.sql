@@ -1,0 +1,1 @@
+ALTER TABLE "integrated_tools" RENAME COLUMN "google_calendar" TO "googlecalendar";

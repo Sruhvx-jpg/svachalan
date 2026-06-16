@@ -9,7 +9,7 @@ import type { TypedEntity } from "corsair/orm"
 import type { GmailSchema } from "@corsair-dev/gmail"
 
 //in house modules/packages
-import { corsair, ensureCorsairSetup, getTenant } from "@repo/corsair"
+import { corsair, getTenant } from "@repo/corsair"
 import { listEmailsInputModel, listEmailsInputModelType } from "./model"
 
 //current working directory files
@@ -23,6 +23,7 @@ export interface DashboardStats {
     unreadCount: number;
     spamCount: number;
     todayCount: number;
+    monthlyStats: Array<{ label: string; count: number }>;
 }
 
 export interface EmailSummary {
@@ -31,6 +32,18 @@ export interface EmailSummary {
     from: string;
     date: string;
     snippet: string;
+    isRead: boolean;
+    isSpam: boolean;
+}
+
+export interface EmailDetail {
+    id: string;
+    subject: string;
+    from: string;
+    to: string;
+    date: string;
+    snippet: string;
+    body: string;
     isRead: boolean;
     isSpam: boolean;
 }
@@ -49,10 +62,9 @@ class EmailService {
     //================================= private methodds ====================================
     private async fetchMails(userId: string, limit: number, offset: number): Promise<EmailMessage[]> {
         try {
-            await ensureCorsairSetup()
             const tenant = await getTenant(userId)
 
-            const dbMsgs = await tenant.gmail.db.messages.list({ limit, offset })
+            const dbMsgs = await tenant.gmail.db.messages.list({ limit: 100 })
 
             const liveMsgs = await Promise.all(
                 dbMsgs.map(async (msg) => {
@@ -65,7 +77,13 @@ class EmailService {
                 })
             );
 
-            return liveMsgs;
+            liveMsgs.sort((a, b) => {
+                const dateA = a.data?.internalDate ? Number(a.data.internalDate) : a.created_at.getTime();
+                const dateB = b.data?.internalDate ? Number(b.data.internalDate) : b.created_at.getTime();
+                return dateB - dateA;
+            });
+
+            return liveMsgs.slice(offset, offset + limit);
         } catch (error) {
             throw new Error(
                 `fetchMessages failed: ${error instanceof Error ? error.message : String(error)}`
@@ -75,7 +93,6 @@ class EmailService {
 
     private async fetchAllMails(userId: string): Promise<EmailMessage[]> {
         try {
-            await ensureCorsairSetup()
             const tenant = await getTenant(userId)
             const dbMsgs = await tenant.gmail.db.messages.list({ limit: 100 })
 
@@ -99,7 +116,6 @@ class EmailService {
 
     private async getGmailConnectionState(userId: string): Promise<GmailConnectionState> {
         try {
-            await ensureCorsairSetup()
             const status = await corsair.manage.connectionStatus.get({ tenantId: userId })
             return await status.gmail as GmailConnectionState
         } catch (error) {
@@ -111,7 +127,6 @@ class EmailService {
 
     private async generateConnectUrl(userId: string): Promise<ConnectEmailResult> {
         try {
-            await ensureCorsairSetup()
             const redirectUri = `${process.env.API_BASE_URL ?? "http://localhost:4000"}/trpc/email.oauthCallback`
             return await generateOAuthUrl(corsair, "gmail", { tenantId: userId, redirectUri })
         } catch (error) {
@@ -123,7 +138,6 @@ class EmailService {
 
     private async triggerGmailSync(userId: string): Promise<void> {
         try {
-            await ensureCorsairSetup()
             const tenant = await getTenant(userId)
             const listRes = await tenant.gmail.api.messages.list({ maxResults: 100 }) as any;
             const messages = listRes.messages || [];
@@ -167,6 +181,19 @@ class EmailService {
         let spamCount = 0
         let todayCount = 0
 
+        const monthlyStats: Array<{ label: string; count: number }> = [];
+        const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+        const monthMap = new Map<string, number>();
+
+        const now = new Date();
+        for (let i = 5; i >= 0; i--) {
+            const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+            const label = `${monthNames[d.getMonth()]} ${d.getFullYear().toString().slice(-2)}`;
+            const key = `${d.getFullYear()}-${d.getMonth()}`;
+            monthMap.set(key, monthlyStats.length);
+            monthlyStats.push({ label, count: 0 });
+        }
+
         for (const msg of mails) {
             const labels = msg.data?.labelIds ?? []
 
@@ -176,9 +203,30 @@ class EmailService {
             const dateStr = msg.data?.internalDate
 
             if (dateStr && new Date(Number(dateStr)) >= today) todayCount++
+
+            if (dateStr) {
+                const mailDate = new Date(Number(dateStr));
+                const key = `${mailDate.getFullYear()}-${mailDate.getMonth()}`;
+                if (monthMap.has(key)) {
+                    const idx = monthMap.get(key)!;
+                    monthlyStats[idx].count++;
+                }
+            } else {
+                const key = `${msg.created_at.getFullYear()}-${msg.created_at.getMonth()}`;
+                if (monthMap.has(key)) {
+                    const idx = monthMap.get(key)!;
+                    monthlyStats[idx].count++;
+                }
+            }
         }
 
-        return { totalEmails: mails.length, unreadCount, spamCount, todayCount }
+        return {
+            totalEmails: mails.length,
+            unreadCount,
+            spamCount,
+            todayCount,
+            monthlyStats,
+        }
     }
     //================================ public methods ======================================
     public async connectEmail(userId: string): Promise<ConnectEmailResult> {
@@ -243,6 +291,132 @@ class EmailService {
     }
 
 
+
+    public async getEmailById(userId: string, emailId: string): Promise<EmailDetail> {
+        try {
+            const tenant = await getTenant(userId)
+            const liveData = await tenant.gmail.api.messages.get({ id: emailId }) as any
+
+            const headers = liveData?.payload?.headers ?? []
+            const getHeader = (name: string) =>
+                headers.find((h: any) => h.name.toLowerCase() === name.toLowerCase())?.value
+
+            const body = this.extractBody(liveData?.payload)
+
+            const labelIds = liveData?.labelIds ?? []
+            const isRead = !labelIds.includes("UNREAD")
+
+            if (!isRead) {
+                try {
+                    await tenant.gmail.api.messages.modify({
+                        id: emailId,
+                        removeLabelIds: ["UNREAD"],
+                    })
+                } catch (modifyError) {
+                    console.error("Failed to mark email as read:", modifyError)
+                }
+            }
+
+            return {
+                id: emailId,
+                subject: getHeader("subject") ?? "(no subject)",
+                from: getHeader("from") ?? "",
+                to: getHeader("to") ?? "",
+                date: liveData?.internalDate
+                    ? new Date(Number(liveData.internalDate)).toISOString()
+                    : new Date().toISOString(),
+                snippet: liveData?.snippet ?? "",
+                body,
+                isRead: true,
+                isSpam: labelIds.includes("SPAM"),
+            }
+        } catch (error) {
+            throw new Error(
+                `getEmailById failed: ${error instanceof Error ? error.message : String(error)}`
+            )
+        }
+    }
+
+    private extractBody(payload: any): string {
+        if (!payload) return ""
+
+        // Direct body on the payload
+        if (payload.body?.data) {
+            return this.decodeBase64(payload.body.data)
+        }
+
+        // Recursively search through parts – prefer text/html, fall back to text/plain
+        if (payload.parts && Array.isArray(payload.parts)) {
+            let htmlBody = ""
+            let textBody = ""
+
+            for (const part of payload.parts) {
+                if (part.mimeType === "text/html" && part.body?.data) {
+                    htmlBody = this.decodeBase64(part.body.data)
+                } else if (part.mimeType === "text/plain" && part.body?.data) {
+                    textBody = this.decodeBase64(part.body.data)
+                } else if (part.parts) {
+                    // Nested multipart
+                    const nested = this.extractBody(part)
+                    if (nested) htmlBody = htmlBody || nested
+                }
+            }
+
+            return htmlBody || textBody
+        }
+
+        return ""
+    }
+
+    private decodeBase64(data: string): string {
+        try {
+            // Gmail uses URL-safe base64
+            const normalized = data.replace(/-/g, "+").replace(/_/g, "/")
+            return Buffer.from(normalized, "base64").toString("utf-8")
+        } catch {
+            return data
+        }
+    }
+
+    public async searchEmails(userId: string, query: string, maxResults: number = 20): Promise<EmailSummary[]> {
+        try {
+            const tenant = await getTenant(userId)
+
+            // Use the Gmail API's `q` parameter for search (supports Gmail search syntax)
+            const listRes = await tenant.gmail.api.messages.list({ q: query, maxResults }) as any
+            const messages = listRes.messages || []
+
+            // Hydrate each result with full message data
+            const hydrated: EmailMessage[] = await Promise.all(
+                messages.map(async (msg: any) => {
+                    if (!msg.id) return null
+                    try {
+                        const liveData = await tenant.gmail.api.messages.get({ id: msg.id })
+                        return {
+                            entity_id: msg.id,
+                            data: liveData,
+                            created_at: new Date(),
+                        } as unknown as EmailMessage
+                    } catch {
+                        return null
+                    }
+                })
+            )
+
+            return hydrated
+                .filter((msg): msg is EmailMessage => msg !== null)
+                .sort((a, b) => {
+                    const dateA = a.data?.internalDate ? Number(a.data.internalDate) : a.created_at.getTime();
+                    const dateB = b.data?.internalDate ? Number(b.data.internalDate) : b.created_at.getTime();
+                    return dateB - dateA;
+                })
+                .map((msg) => this.mapToEmailSummary(msg))
+        } catch (error) {
+            throw new Error(
+                `searchEmails failed: ${error instanceof Error ? error.message : String(error)}`
+            )
+        }
+    }
 
     //end
 }

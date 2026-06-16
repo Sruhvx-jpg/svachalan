@@ -1,17 +1,18 @@
 import "./globals.css";
 import { GlobalProviders } from "./providers/global";
-import { Geist } from "next/font/google";
+import { Oswald } from "next/font/google";
 import { cn } from "../src/lib/utils";
 
-
-const geist = Geist({subsets:['latin'],variable:'--font-sans'});
-
+const oswald = Oswald({
+  subsets: ["latin"],
+  variable: "--font-sans",
+});
 
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={cn("font-sans", geist.variable)}>
+    <html lang="en" className={cn("font-sans", oswald.variable)}>
       <body>
         <GlobalProviders>{children}</GlobalProviders>
       </body>

@@ -1,14 +1,13 @@
 // pnpm packages
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
-import { generateOAuthUrl, processOAuthCallback } from "corsair/oauth";
 
 // in house modules
 import { emailService } from "../../../services"
-import { corsair, ensureCorsairSetup } from "@repo/corsair"
+import { corsair } from "@repo/corsair"
 
 // current working directory files
-import { publicProcedure, router, TokenBasedProcedure } from "../../../trpc";
+import { router, TokenBasedProcedure } from "../../../trpc";
 import { generatePath } from "../../../utils/path-generator";
 import {
   listEmailsInputModel,
@@ -16,10 +15,10 @@ import {
   dashboardStatsOutputModel,
   listEmailsOutputModel,
   syncOutputModel,
-  connectEmailInputModel,
-  connectEmailOutputModel,
-  callbackInputModel,
-  callbackOutputModel
+  searchEmailsInputModel,
+  searchEmailsOutputModel,
+  getEmailByIdInputModel,
+  getEmailByIdOutputModel,
 } from "./model";
 import { setupCorsair } from "corsair";
 
@@ -29,72 +28,6 @@ const APP_URL = "http://localhost:3000"
 const OAUTH_CALLBACK_URL = `${APP_URL}/api/auth/callback`
 
 export const emailRouter = router({
-
-  connectEmail: TokenBasedProcedure.meta({
-    openapi: { method: "POST", path: getPath("connect"), tags: TAGS }
-  })
-    .input(connectEmailInputModel)
-    .output(connectEmailOutputModel)
-    .mutation(async ({ input, ctx }) => {
-      try {
-        const { plugin } = input
-        const userId = ctx.user.sub
-
-        await ensureCorsairSetup()
-        await setupCorsair(corsair, { tenantId: userId }) // <-- this function makes the corsair_account with tenantid only
-
-        const { url, state } = await generateOAuthUrl(corsair, plugin, {
-          tenantId: userId,
-          redirectUri: OAUTH_CALLBACK_URL,
-        })
-
-        if (!url || !state) {
-          throw new Error(`Failed to generate OAuth URL for plugin: ${plugin}`)
-        }
-
-        return { url, state }
-      } catch (error) {
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message: error instanceof Error ? error.message : "connect email route failed",
-        });
-      }
-    }),
-
-  oauthCallback: TokenBasedProcedure.meta({
-    openapi: { method: "POST", path: getPath("oauthCallback"), tags: TAGS }
-  })
-    .input(callbackInputModel)
-    .output(callbackOutputModel)
-    .mutation(async ({ input, ctx }) => {
-      try {
-        const { code, state, plugin } = input
-        const userId = ctx.user.sub
-
-        await ensureCorsairSetup()
-
-        const result = await processOAuthCallback(corsair, { // <--- this function stores acc and ref token in config column
-          code,
-          state,
-          redirectUri: OAUTH_CALLBACK_URL,
-        })
-
-        // ✅ Seed the DB right after OAuth completes
-        const tenant = await corsair.withTenant(userId)
-        await tenant.gmail.api.messages.list({ maxResults: 100 })
-
-        return {
-          success: true,
-          message: `Successfully connected ${result.plugin || plugin} account`,
-        }
-      } catch (error) {
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message: error instanceof Error ? error.message : "oauth callback route failed",
-        });
-      }
-    }),
-
   // ✅ GET + query (was GET + mutation)
   listEmails: TokenBasedProcedure.meta({
     openapi: { method: "GET", path: getPath("List"), tags: TAGS },
@@ -163,6 +96,44 @@ export const emailRouter = router({
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
           message: error instanceof Error ? error.message : "get connection status route failed",
+        });
+      }
+    }),
+
+  searchEmails: TokenBasedProcedure.meta({
+    openapi: { method: "POST", path: getPath("Search"), tags: TAGS },
+  })
+    .input(searchEmailsInputModel)
+    .output(searchEmailsOutputModel)
+    .query(async ({ input, ctx }) => {
+      try {
+        const { query, maxResults } = input;
+        const emails = await emailService.searchEmails(
+          ctx.user.sub,
+          query,
+          maxResults,
+        );
+        return { emails };
+      } catch (error) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: error instanceof Error ? error.message : "search emails route failed",
+        });
+      }
+    }),
+
+  getEmailById: TokenBasedProcedure.meta({
+    openapi: { method: "GET", path: getPath("GetById"), tags: TAGS },
+  })
+    .input(getEmailByIdInputModel)
+    .output(getEmailByIdOutputModel)
+    .query(async ({ input, ctx }) => {
+      try {
+        return await emailService.getEmailById(ctx.user.sub, input.emailId);
+      } catch (error) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: error instanceof Error ? error.message : "get email by id route failed",
         });
       }
     }),

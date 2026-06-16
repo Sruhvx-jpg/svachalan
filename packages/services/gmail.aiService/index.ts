@@ -3,39 +3,45 @@
 //2. use try catch block everywhere, in catch block throw a error mentioning which private function it originated
 //3. imports should first start with pnpm package -> in house modules/packages -> current working directory files
 
-import { getTenant } from "@repo/corsair"
-import { chat } from "@repo/corsair/src/corsair"
-
 //pnpm packages
+import type { StreamTextResult } from "ai"
 
 //in house modules/packages
+import { chat, streamChat } from "@repo/corsair/src/corsair"
 
 //current working dir files
 
-const SYSTEM_PROMT = `You are an intelligent email assistant with access to the user's Gmail inbox.
-You can help the user:
-- Read and search their emails
-- Get summaries of their inbox
-- Find specific emails by sender, subject, or content
-- Mark emails as read
-- Send emails on their behalf
- 
-Always use Corsair tools to interact with Gmail. Start with list_operations to discover
-what's available, use get_schema for parameters, then run_script to execute.
-When referencing emails, use their ID, not subject lines.
-Be concise and helpful. If an action could be destructive (delete, send), confirm with the user first.`
-
-class GmailDotAIService{
+class GmailDotAIService {
     //======================================== private methods ========================================
 
 
-    //======================================== public methos ==========================================
-    public async chatWithAi(message: string, userId: string){
-        const text = await chat(message, userId)
-        console.log(text)
-        
+    //======================================== public methods ==========================================
 
-        return text
+    /**
+     * Non-streaming chat — returns the final AI response text.
+     */
+    public async chatWithAi(message: string, userId: string): Promise<string> {
+        try {
+            const text = await chat(message, userId)
+            return text
+        } catch (error) {
+            throw new Error(
+                `chatWithAi failed: ${error instanceof Error ? error.message : String(error)}`
+            )
+        }
+    }
+
+    /**
+     * Streaming chat — returns the streamText result for piping to SSE.
+     */
+    public streamChatWithAi(message: string, userId: string): StreamTextResult<any, any> {
+        try {
+            return streamChat(message, userId)
+        } catch (error) {
+            throw new Error(
+                `streamChatWithAi failed: ${error instanceof Error ? error.message : String(error)}`
+            )
+        }
     }
     //end
 }

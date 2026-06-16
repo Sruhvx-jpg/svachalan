@@ -2,6 +2,8 @@ import {
   pgTable,
   timestamp,
   uuid,
+  varchar,
+  boolean
 } from "drizzle-orm/pg-core";
 
 import { usersTable } from "./user";
@@ -35,6 +37,30 @@ export const userProductsTable = pgTable(
     }).notNull().defaultNow(),
   },
 );
+
+
+export const productLicenses = pgTable("product_licenses", {
+  id: uuid("id").defaultRandom().primaryKey(),
+
+  userProductId: uuid("user_product_id")
+    .notNull()
+    .references(() => userProductsTable.id, {
+      onDelete: "cascade",
+    }),
+
+  licenseKey: varchar("license_key", { length: 255 })
+    .notNull()
+    .unique(),
+
+  isActive: boolean("is_active")
+    .default(true)
+    .notNull(),
+
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+});
+
 
 export type SelectUserProduct = typeof userProductsTable.$inferSelect;
 export type InsertUserProduct = typeof userProductsTable.$inferInsert;

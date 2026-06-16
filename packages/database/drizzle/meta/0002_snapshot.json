@@ -1,6 +1,6 @@
 {
-  "id": "428bedba-7ee8-492b-8c7f-3daddae7574b",
-  "prevId": "975e9169-97e1-4a88-84d9-2c0e3d40746a",
+  "id": "ef6efaa1-cb2b-4216-bcbd-2383d82ab583",
+  "prevId": "9ada0375-26a4-45a6-86ef-b31fec1d17ec",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -59,6 +59,13 @@
           "primaryKey": false,
           "notNull": true,
           "default": "now()"
+        },
+        "connected_tools": {
+          "name": "connected_tools",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'{}'"
         }
       },
       "indexes": {},
@@ -224,6 +231,74 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
+    "public.product_licenses": {
+      "name": "product_licenses",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "user_product_id": {
+          "name": "user_product_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "license_key": {
+          "name": "license_key",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "is_active": {
+          "name": "is_active",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "product_licenses_user_product_id_user_products_id_fk": {
+          "name": "product_licenses_user_product_id_user_products_id_fk",
+          "tableFrom": "product_licenses",
+          "tableTo": "user_products",
+          "columnsFrom": [
+            "user_product_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "product_licenses_license_key_unique": {
+          "name": "product_licenses_license_key_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "license_key"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
     "public.user_products": {
       "name": "user_products",
       "schema": "",
@@ -288,6 +363,53 @@
           "tableTo": "marketplace_products",
           "columnsFrom": [
             "product_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.integrated_tools": {
+      "name": "integrated_tools",
+      "schema": "",
+      "columns": {
+        "user_id": {
+          "name": "user_id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "gmail": {
+          "name": "gmail",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "googlecalendar": {
+          "name": "googlecalendar",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "integrated_tools_user_id_users_id_fk": {
+          "name": "integrated_tools_user_id_users_id_fk",
+          "tableFrom": "integrated_tools",
+          "tableTo": "users",
+          "columnsFrom": [
+            "user_id"
           ],
           "columnsTo": [
             "id"

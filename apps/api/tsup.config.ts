@@ -11,4 +11,5 @@ export default defineConfig({
   loader: { ".json": "copy" },
   minify: true,
   sourcemap: false,
+  external: ["@anthropic-ai/claude-agent-sdk", "@mastra/core/tools"],
 });

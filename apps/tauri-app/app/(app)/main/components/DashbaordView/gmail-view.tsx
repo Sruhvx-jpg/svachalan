@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import {
   Mail,
   Inbox,
@@ -10,8 +10,6 @@ import {
   RefreshCw,
   MailOpen,
   Loader2,
-  ChevronLeft,
-  ChevronRight,
   ChevronDown,
   User,
   ArrowRight,
@@ -353,10 +351,24 @@ type EmailFilter = "all" | "unread" | "spam" | "today";
 export function GmailView() {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeSearch, setActiveSearch] = useState("");
-  const [page, setPage] = useState(0);
   const [expandedEmailId, setExpandedEmailId] = useState<string | null>(null);
   const [activeFilter, setActiveFilter] = useState<EmailFilter>("all");
   const PAGE_SIZE = 20;
+
+  // --- Infinite scroll state ---
+  const [allEmails, setAllEmails] = useState<typeof rawEmailsPlaceholder>([]);
+  const [currentOffset, setCurrentOffset] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const sentinelRef = useRef<HTMLDivElement>(null);
+  const initialLoadDone = useRef(false);
+
+  // Placeholder type reference
+  type EmailItem = {
+    id: string; subject: string; from: string; date: string;
+    snippet: string; isRead: boolean; isSpam: boolean;
+  };
+  const rawEmailsPlaceholder: EmailItem[] = [];
 
   // --- tRPC hooks ---
   const { data: stats, isLoading: statsLoading } =
@@ -368,7 +380,9 @@ export function GmailView() {
     refetch: refetchEmails,
   } = trpc.Email.listEmails.useQuery({
     limit: PAGE_SIZE,
-    offset: page * PAGE_SIZE,
+    offset: currentOffset,
+  }, {
+    enabled: !initialLoadDone.current || isLoadingMore,
   });
 
   const {
@@ -382,11 +396,61 @@ export function GmailView() {
   const { refetch: syncEmails, isFetching: isSyncing } =
     trpc.Email.syncEmails.useQuery(undefined, { enabled: false });
 
+  // --- Accumulate emails on data change ---
+  useEffect(() => {
+    if (emailsData?.emails) {
+      if (currentOffset === 0) {
+        setAllEmails(emailsData.emails);
+      } else {
+        setAllEmails(prev => {
+          const existingIds = new Set(prev.map(e => e.id));
+          const newEmails = emailsData.emails.filter(e => !existingIds.has(e.id));
+          return [...prev, ...newEmails];
+        });
+      }
+      if (emailsData.emails.length < PAGE_SIZE) {
+        setHasMore(false);
+      }
+      setIsLoadingMore(false);
+      initialLoadDone.current = true;
+    }
+  }, [emailsData, currentOffset]);
+
+  // --- IntersectionObserver for infinite scroll ---
+  const loadMore = useCallback(() => {
+    if (!hasMore || isLoadingMore || emailsLoading) return;
+    setIsLoadingMore(true);
+    setCurrentOffset(prev => prev + PAGE_SIZE);
+  }, [hasMore, isLoadingMore, emailsLoading]);
+
+  useEffect(() => {
+    if (isLoadingMore && currentOffset > 0) {
+      refetchEmails();
+    }
+  }, [currentOffset, isLoadingMore, refetchEmails]);
+
+  useEffect(() => {
+    const sentinel = sentinelRef.current;
+    if (!sentinel) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          loadMore();
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [loadMore]);
+
   // --- derived state ---
   const isSearching = activeSearch.length > 0;
   const rawEmails = isSearching
     ? searchResults?.emails ?? []
-    : emailsData?.emails ?? [];
+    : allEmails;
 
   // Apply client-side filter
   const displayedEmails = rawEmails.filter((email) => {
@@ -409,7 +473,7 @@ export function GmailView() {
     }
   });
 
-  const isLoadingEmails = isSearching ? searchLoading : emailsLoading;
+  const isLoadingEmails = isSearching ? searchLoading : (emailsLoading && currentOffset === 0);
 
   const filterCounts = {
     all: rawEmails.length,
@@ -426,7 +490,6 @@ export function GmailView() {
     const trimmed = searchQuery.trim();
     if (trimmed) {
       setActiveSearch(trimmed);
-      setPage(0);
       setExpandedEmailId(null);
       setActiveFilter("all");
     }
@@ -435,7 +498,6 @@ export function GmailView() {
   const handleClearSearch = () => {
     setSearchQuery("");
     setActiveSearch("");
-    setPage(0);
     setExpandedEmailId(null);
     setActiveFilter("all");
   };
@@ -447,6 +509,11 @@ export function GmailView() {
 
   const handleSync = async () => {
     await syncEmails();
+    // Reset and re-fetch from beginning
+    setCurrentOffset(0);
+    setHasMore(true);
+    setAllEmails([]);
+    initialLoadDone.current = false;
     refetchEmails();
   };
 
@@ -726,13 +793,22 @@ export function GmailView() {
           </span>
         </div>
 
-        {/* Loading state */}
+        {/* Skeleton loading state */}
         {isLoadingEmails && (
-          <div className="flex items-center justify-center py-16">
-            <Loader2 className="h-6 w-6 animate-spin text-indigo-500" />
-            <span className="ml-3 text-sm text-zinc-500">
-              Loading emails…
-            </span>
+          <div className="divide-y divide-zinc-100 dark:divide-zinc-800/50">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <div key={i} className="flex items-start gap-4 px-5 py-3.5 animate-pulse">
+                <div className="mt-1.5 size-2 rounded-full bg-zinc-200 dark:bg-zinc-800 shrink-0" />
+                <div className="flex-1 min-w-0 space-y-2">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="h-3.5 w-32 rounded-md bg-zinc-200 dark:bg-zinc-800" />
+                    <div className="h-3 w-12 rounded-md bg-zinc-100 dark:bg-zinc-800/60 shrink-0" />
+                  </div>
+                  <div className="h-3 w-48 rounded-md bg-zinc-200 dark:bg-zinc-800" />
+                  <div className="h-2.5 w-64 rounded-md bg-zinc-100 dark:bg-zinc-800/40" />
+                </div>
+              </div>
+            ))}
           </div>
         )}
 
@@ -770,38 +846,17 @@ export function GmailView() {
           </ul>
         )}
 
-        {/* Pagination - only for list view, not search */}
-        {!isSearching && !isLoadingEmails && displayedEmails.length > 0 && (
-          <div className="flex items-center justify-between border-t border-zinc-100 dark:border-zinc-800/60 px-5 py-3">
-            <button
-              onClick={() => setPage((p) => Math.max(0, p - 1))}
-              disabled={page === 0}
-              className={cn(
-                "flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-colors",
-                page === 0
-                  ? "text-zinc-300 dark:text-zinc-700 cursor-not-allowed"
-                  : "text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800/60"
-              )}
-            >
-              <ChevronLeft size={14} />
-              Previous
-            </button>
-            <span className="text-xs tabular-nums text-zinc-400 dark:text-zinc-500">
-              Page {page + 1}
-            </span>
-            <button
-              onClick={() => setPage((p) => p + 1)}
-              disabled={displayedEmails.length < PAGE_SIZE}
-              className={cn(
-                "flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-colors",
-                displayedEmails.length < PAGE_SIZE
-                  ? "text-zinc-300 dark:text-zinc-700 cursor-not-allowed"
-                  : "text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800/60"
-              )}
-            >
-              Next
-              <ChevronRight size={14} />
-            </button>
+        {/* Infinite scroll sentinel */}
+        {!isSearching && displayedEmails.length > 0 && (
+          <div ref={sentinelRef} className="py-4 flex items-center justify-center">
+            {isLoadingMore ? (
+              <div className="flex items-center gap-2">
+                <Loader2 className="h-4 w-4 animate-spin text-indigo-500" />
+                <span className="text-xs text-zinc-400">Loading more…</span>
+              </div>
+            ) : !hasMore ? (
+              <span className="text-xs text-zinc-400 dark:text-zinc-500">All emails loaded</span>
+            ) : null}
           </div>
         )}
       </div>

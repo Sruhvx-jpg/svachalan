@@ -1,8 +1,8 @@
 import {
   pgTable,
+  text,
   timestamp,
   uuid,
-  varchar,
   boolean
 } from "drizzle-orm/pg-core";
 
@@ -48,7 +48,7 @@ export const productLicenses = pgTable("product_licenses", {
       onDelete: "cascade",
     }),
 
-  licenseKey: varchar("license_key", { length: 255 })
+  licenseKey: text("license_key")
     .notNull()
     .unique(),
 

@@ -5,20 +5,34 @@ import { cn } from "../lib/utils";
 
 interface StarryNightProps {
   className?: string;
-  starDensity?: number; // Higher number = fewer stars (represents area per star)
+  starDensity?: number; // Lower = more stars
+  shootingStarFrequency?: number;
 }
 
 interface Star {
   x: number;
   y: number;
-  size: number;
+  size: number; // Represents the radius of the star points
   phase: number;
   twinkleSpeed: number;
   color: string;
-  isFlareStar: boolean;
 }
 
-export function StarryNight({ className, starDensity = 3000 }: StarryNightProps) {
+interface ShootingStar {
+  x: number;
+  y: number;
+  velocityX: number;
+  velocityY: number;
+  length: number;
+  age: number;
+  maxAge: number;
+}
+
+export function StarryNight({
+  className,
+  starDensity = 2000, // Slightly higher number since the custom stars are larger
+  shootingStarFrequency = 0.006,
+}: StarryNightProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -30,104 +44,111 @@ export function StarryNight({ className, starDensity = 3000 }: StarryNightProps)
 
     let animationFrameId: number;
     let stars: Star[] = [];
+    let shootingStars: ShootingStar[] = [];
 
-    // --- INITIALIZATION & RESIZING ---
     const resizeCanvas = () => {
       const parent = canvas.parentElement;
       canvas.width = parent ? parent.clientWidth : window.innerWidth;
       canvas.height = parent ? parent.clientHeight : window.innerHeight;
-      initStars();
+      initSky();
     };
 
-    const initStars = () => {
+    const initSky = () => {
       stars = [];
-      const numStars = Math.floor((canvas.width * canvas.height) / starDensity);
+      const totalStars = Math.floor((canvas.width * canvas.height) / starDensity);
+      const colors = ["#ffffff", "#f0f9ff", "#fef3c7", "#e0e7ff"];
 
-      // Deep celestial cosmic color variations
-      const starColors = [
-        "rgba(255, 255, 255,",       // Crisp Pure White
-        "rgba(220, 235, 255,",       // Pale Blue Giant
-        "rgba(255, 245, 220,",       // Soft Amber Main Sequence
-      ];
-
-      for (let i = 0; i < numStars; i++) {
-        const sizeRand = Math.random();
-        
-        // Only about 12% of stars get the beautiful cross flare shapes
-        const isFlareStar = sizeRand > 0.88; 
-        
+      for (let i = 0; i < totalStars; i++) {
         stars.push({
           x: Math.random() * canvas.width,
           y: Math.random() * canvas.height,
-          // Pinpoint background stars are tiny (0.4-0.8px), flare foreground stars are larger (1.2-1.8px)
-          size: isFlareStar ? Math.random() * 0.6 + 1.2 : Math.random() * 0.4 + 0.4,
-          phase: Math.random() * Math.PI * 2, // Varied starting offset for smooth sine looping
-          twinkleSpeed: Math.random() * 0.015 + 0.005, // SIGNIFICANTLY SLOWED DOWN (was 0.02+)
-          color: starColors[Math.floor(Math.random() * starColors.length)],
-          isFlareStar,
+          // Custom star shapes need to be slightly larger to look clear (2px to 5px spikes)
+          size: Math.random() * 3 + 2,
+          phase: Math.random() * Math.PI * 2,
+          // Varied speeds so they don't blink in unison
+          twinkleSpeed: Math.random() * 0.04 + 0.015,
+          color: colors[Math.floor(Math.random() * colors.length)],
         });
       }
     };
 
-    // --- ANIMATION LOOP ---
+    const createShootingStar = () => {
+      const angle = (Math.random() * 30 + 210) * (Math.PI / 180);
+      const speed = Math.random() * 8 + 8;
+
+      shootingStars.push({
+        x: Math.random() * canvas.width * 1.1,
+        y: -20,
+        velocityX: Math.cos(angle) * speed,
+        velocityY: Math.sin(angle) * speed,
+        length: Math.random() * 80 + 50,
+        age: 0,
+        maxAge: 40,
+      });
+    };
+
     const render = () => {
-      // Draw smooth solid space void
-      ctx.fillStyle = "#020205";
+      // Clear out the previous frame entirely with pure pitch black
+      ctx.globalCompositeOperation = "source-over";
+      ctx.globalAlpha = 1.0;
+      ctx.fillStyle = "#000000";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
+      // 1. Draw 4-Point Blinking Stars
+      ctx.globalCompositeOperation = "screen";
       stars.forEach((star) => {
-        // Increment phase step over time
         star.phase += star.twinkleSpeed;
-        
-        // Sine calculation generates a continuous rhythmic breathing wave rather than jerky twitching
-        const brightness = 0.2 + (Math.sin(star.phase) + 1) * 0.4; 
 
-        ctx.save();
-        
-        if (star.isFlareStar) {
-          // --- DRAW REAL CORE FLARE STAR (+ SHAPE) ---
-          ctx.translate(star.x, star.y);
-          
-          // Outer subtle lens glow halo
-          const radialGlow = ctx.createRadialGradient(0, 0, 0, 0, 0, star.size * 5);
-          radialGlow.addColorStop(0, `${star.color}${brightness})`);
-          radialGlow.addColorStop(0.3, `${star.color}${brightness * 0.4})`);
-          radialGlow.addColorStop(1, "rgba(0,0,0,0)");
-          ctx.fillStyle = radialGlow;
-          ctx.beginPath();
-          ctx.arc(0, 0, star.size * 5, 0, Math.PI * 2);
-          ctx.fill();
+        // Math.sin forces the alpha below 0 dynamically, causing the star to turn completely off 
+        // for half its cycle—giving it a genuine, sharp "blinking" behavior.
+        const rawAlpha = Math.sin(star.phase);
+        if (rawAlpha <= 0) return; // Skip rendering if the star is currently "off"
 
-          // Horizontal and Vertical Rays to form spikes
-          ctx.strokeStyle = `${star.color}${brightness * 0.95})`;
-          ctx.lineWidth = 0.75;
-          
-          // Horizontal Spike
-          ctx.beginPath();
-          ctx.moveTo(-star.size * 4, 0);
-          ctx.lineTo(star.size * 4, 0);
-          ctx.stroke();
+        ctx.fillStyle = star.color;
+        ctx.globalAlpha = rawAlpha;
 
-          // Vertical Spike
-          ctx.beginPath();
-          ctx.moveTo(0, -star.size * 4);
-          ctx.lineTo(0, star.size * 4);
-          ctx.stroke();
-          
-          // Tiny absolute core nucleus
-          ctx.fillStyle = `rgba(255, 255, 255, ${brightness})`;
-          ctx.beginPath();
-          ctx.arc(0, 0, star.size * 0.6, 0, Math.PI * 2);
-          ctx.fill();
-        } else {
-          // --- DRAW CRISP CRYSTAL BACKGROUND STAR POINT ---
-          ctx.fillStyle = `${star.color}${brightness})`;
-          ctx.beginPath();
-          ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
-          ctx.fill();
-        }
+        // Draw a realistic 4-pointed star flare using quadratic curves pinched toward the center
+        ctx.beginPath();
+        ctx.moveTo(star.x, star.y - star.size); // Top tip
+        ctx.quadraticCurveTo(star.x, star.y, star.x + star.size, star.y); // Pinch to right tip
+        ctx.quadraticCurveTo(star.x, star.y, star.x, star.y + star.size); // Pinch to bottom tip
+        ctx.quadraticCurveTo(star.x, star.y, star.x - star.size, star.y); // Pinch to left tip
+        ctx.quadraticCurveTo(star.x, star.y, star.x, star.y - star.size); // Pinch back to top
+        ctx.closePath();
+        ctx.fill();
+      });
 
-        ctx.restore();
+      ctx.globalAlpha = 1.0; // Reset alpha
+
+      // 2. Draw Shooting Stars
+      if (Math.random() < shootingStarFrequency) {
+        createShootingStar();
+      }
+
+      ctx.globalCompositeOperation = "lighter";
+      shootingStars = shootingStars.filter((s) => s.age < s.maxAge);
+      shootingStars.forEach((s) => {
+        s.age++;
+        s.x += s.velocityX;
+        s.y += s.velocityY;
+        const fade = 1 - s.age / s.maxAge;
+
+        const grad = ctx.createLinearGradient(
+          s.x - s.velocityX * s.length * 0.4,
+          s.y - s.velocityY * s.length * 0.4,
+          s.x,
+          s.y
+        );
+        grad.addColorStop(0, "rgba(255, 255, 255, 0)");
+        grad.addColorStop(1, `rgba(235, 245, 255, ${fade * 0.8})`);
+
+        ctx.strokeStyle = grad;
+        ctx.lineWidth = 1.2;
+        ctx.lineCap = "round";
+        ctx.beginPath();
+        ctx.moveTo(s.x - s.velocityX * s.length * 0.4, s.y - s.velocityY * s.length * 0.4);
+        ctx.lineTo(s.x, s.y);
+        ctx.stroke();
       });
 
       animationFrameId = requestAnimationFrame(render);
@@ -141,15 +162,12 @@ export function StarryNight({ className, starDensity = 3000 }: StarryNightProps)
       window.removeEventListener("resize", resizeCanvas);
       cancelAnimationFrame(animationFrameId);
     };
-  }, [starDensity]);
+  }, [starDensity, shootingStarFrequency]);
 
   return (
     <canvas
       ref={canvasRef}
-      className={cn(
-        "absolute inset-0 z-0 pointer-events-none",
-        className
-      )}
+      className={cn("absolute inset-0 z-0 pointer-events-none bg-black", className)}
       aria-hidden="true"
     />
   );

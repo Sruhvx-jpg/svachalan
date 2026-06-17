@@ -22,6 +22,20 @@
       "when": 1781559722600,
       "tag": "0002_omniscient_blink",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1781633027813,
+      "tag": "0003_unknown_vindicator",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1781695020163,
+      "tag": "0004_serious_ego",
+      "breakpoints": true
     }
   ]
 }

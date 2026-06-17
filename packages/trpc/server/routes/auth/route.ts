@@ -1,7 +1,8 @@
 import { TRPCError } from "@trpc/server";
+import { z } from "zod";
 import { userService } from "../../services";
 
-import {  setAuthToken } from "../../utils/cookie";
+import { setAuthToken, deleteAuthToken } from "../../utils/cookie";
 import { generatePath } from "../../utils/path-generator";
 
 
@@ -74,6 +75,18 @@ export const authRouter = router({
     const data = await userService.getMe(userId)
 
     return data
+  }),
+
+  //========================================= logout route ==========================================
+  logout: TokenBasedProcedure.meta({
+    openapi: {
+      method: "POST", tags: TAGS, path: getPath("logout")
+    }
   })
+    .output(z.object({ success: z.boolean() }))
+    .mutation(async ({ ctx }) => {
+      deleteAuthToken(ctx);
+      return { success: true };
+    }),
   //end
 })

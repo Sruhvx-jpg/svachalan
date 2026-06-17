@@ -266,7 +266,7 @@ class EmailService {
 
     public async SyncEmails(userId: string): Promise<{ success: boolean }> {
         try {
-            const res = await this.triggerGmailSync(userId)
+            await this.triggerGmailSync(userId)
             return { success: true }
         } catch (error) {
             throw new Error(

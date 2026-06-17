@@ -19,5 +19,19 @@ services:
     volumes:
       - redis-data:/data
 
+  supermemory:
+    build:
+      context: .
+      dockerfile: Dockerfile.supermemory
+    container_name: svachalan-supermemory
+    restart: unless-stopped
+    ports:
+      - "6767:6767"
+    environment:
+      - GEMINI_API_KEY=${GOOGLE_GENERATIVE_AI_API_KEY}
+    volumes:
+      - supermemory-data:/var/lib/supermemory
+
 volumes:
   redis-data:
+  supermemory-data:

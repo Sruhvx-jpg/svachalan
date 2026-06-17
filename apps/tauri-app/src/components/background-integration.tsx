@@ -1,13 +1,14 @@
 "use client";
 
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect, useRef } from "react";
+import gsap from "gsap";
 import {
   SiSlack, SiGmail, SiGooglecalendar, SiGithub, SiJira, SiTrello,
   SiDiscord, SiZoom, SiDropbox, SiNotion, SiFigma, SiAsana,
   SiSalesforce, SiHubspot, SiLinear, SiZendesk, SiStripe, SiShopify,
   SiIntercom, SiMailchimp, SiMiro, SiAirtable, SiCanva, SiWebflow,
   SiVercel, SiTwilio, SiGitlab, SiBitbucket, SiGooglecloud,
-  SiOpenai,  SiWhatsapp, SiSpotify, SiFramer, SiPatreon
+  SiOpenai, SiWhatsapp, SiSpotify, SiFramer, SiPatreon
 } from "react-icons/si";
 
 const ICONS = [
@@ -15,124 +16,179 @@ const ICONS = [
   SiDiscord, SiZoom, SiDropbox, SiNotion, SiFigma, SiAsana,
   SiSalesforce, SiHubspot, SiLinear, SiZendesk, SiStripe, SiShopify,
   SiIntercom, SiMailchimp, SiMiro, SiAirtable, SiCanva, SiWebflow,
-  SiVercel, SiTwilio, SiGitlab, SiBitbucket, SiGooglecloud, 
+  SiVercel, SiTwilio, SiGitlab, SiBitbucket, SiGooglecloud,
   SiOpenai, SiWhatsapp, SiSpotify, SiFramer, SiPatreon
 ];
 
 export function BackgroundIntegrations() {
-  const [mouse, setMouse] = useState({ x: -9999, y: -9999 });
-  const [windowSize, setWindowSize] = useState({ width: 0, height: 0 });
+  const containerRef = useRef<HTMLDivElement>(null);
   const [isMounted, setIsMounted] = useState(false);
 
-  // Safely capture window size only after mounting on the browser client
   useEffect(() => {
     setIsMounted(true);
-    setWindowSize({ width: window.innerWidth, height: window.innerHeight });
-    
-    const handleResize = () =>
-      setWindowSize({ width: window.innerWidth, height: window.innerHeight });
-    
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+  // Define a pool of persistent balloon nodes to prevent DOM churn
+  const totalBalloons = 45;
   const items = useMemo(() => {
-    const positions = [];
-    let iconIndex = 0;
-
-    // High density grid counts
-    const cols = 22; 
-    const rows = 11; 
-
-    for (let col = 0; col < cols; col++) {
-      for (let row = 0; row < rows; row++) {
-        // Evenly disperse coordinates horizontally and vertically across 100% of the viewport
-        const x = (col / (cols - 1)) * 100;
-        const y = (row / (rows - 1)) * 100 + (col % 2 !== 0 ? 4.5 : 0); // Stagger row placement for a beautiful mesh look
-
-        positions.push({
-          id: `node-${col}-${row}`,
-          Icon: ICONS[iconIndex % ICONS.length],
-          x,
-          y,
-        });
-        iconIndex++;
-      }
-    }
-
-    // Shuffle layout array once to keep icon dispersion clean and non-repeating
-    return positions.sort(() => Math.random() - 0.5);
+    return Array.from({ length: totalBalloons }).map((_, i) => ({
+      id: `balloon-${i}`,
+      Icon: ICONS[i % ICONS.length],
+    }));
   }, []);
 
-  // Return null or empty div during SSR step to completely avoid hydration bugs
+  // Advanced GSAP Animation Engine Layout
+  useEffect(() => {
+    if (!isMounted || !containerRef.current) return;
+
+    // Use gsap.context to ensure seamless cleanups under React 18 StrictMode
+    const ctx = gsap.context(() => {
+      const elements = containerRef.current?.querySelectorAll(".balloon-item");
+
+      elements?.forEach((el) => {
+        let floatTween: gsap.core.Tween | null = null;
+        let wiggleTween: gsap.core.Tween | null = null;
+
+        const resetAndFloat = (isInitialSpawn = false) => {
+          if (floatTween) floatTween.kill();
+          if (wiggleTween) wiggleTween.kill();
+
+          const viewWidth = window.innerWidth;
+          const viewHeight = window.innerHeight;
+
+          // Randomized structural physics properties
+          const startY = viewHeight + 80;
+          const endY = -80;
+          const randomX = Math.random() * viewWidth;
+          const speed = 10 + Math.random() * 12; // Floating velocity range
+          const depthScale = 0.5 + Math.random() * 0.7; // Simulates Z-depth
+          const baseOpacity = 0.2 + Math.random() * 0.25; // Random variation matching design rules
+
+          // 1. Position Initialization 
+          gsap.set(el, {
+            x: randomX,
+            y: isInitialSpawn ? Math.random() * viewHeight : startY,
+            scale: depthScale,
+            opacity: baseOpacity,
+            rotation: Math.random() * 40 - 20,
+            pointerEvents: "auto",
+          });
+
+          // 2. Linear Vertical Ascent Animation
+          floatTween = gsap.to(el, {
+            y: endY,
+            duration: speed,
+            ease: "none",
+            onUpdate: function () {
+              // Mathematical Proximity Masking Layer for the center form card
+              const currentX = gsap.getProperty(el, "x") as number;
+              const currentY = gsap.getProperty(el, "y") as number;
+              const cardCenterX = viewWidth / 2;
+              const cardCenterY = viewHeight / 2;
+
+              const distanceX = Math.abs(currentX - cardCenterX);
+              const distanceY = Math.abs(currentY - cardCenterY);
+
+              // Dynamically suppress alpha values if floating beneath central UI card
+              if (distanceX < 220 && distanceY < 340) {
+                gsap.set(el, { opacity: 0.04 });
+              } else if (distanceX < 280 && distanceY < 400) {
+                gsap.set(el, { opacity: 0.15 });
+              } else {
+                gsap.set(el, { opacity: baseOpacity });
+              }
+            },
+            onComplete: () => {
+              // Trigger explicit ceiling pop animation instead of disappearing silently
+              triggerPop();
+            },
+          });
+
+          // 3. Horizontal Sine-Wave Drifting (Wiggle Physics)
+          const driftRadius = 25 + Math.random() * 45;
+          wiggleTween = gsap.to(el, {
+            x: `+=${driftRadius}`,
+            duration: 2.5 + Math.random() * 2,
+            ease: "sine.inOut",
+            yoyo: true,
+            repeat: -1,
+          });
+        };
+
+        //  Execution Timeline
+        const triggerPop = () => {
+          if (el.getAttribute("data-popping") === "true") return;
+          el.setAttribute("data-popping", "true");
+          
+
+          if (floatTween) floatTween.kill();
+          if (wiggleTween) wiggleTween.kill();
+
+          const currentScale = gsap.getProperty(el, "scale") as number;
+
+          const popTimeline = gsap.timeline({
+            onComplete: () => {
+              el.setAttribute("data-popping", "false");
+              resetAndFloat(false); // Instantly recycle element back to spawn queue
+            },
+          });
+
+          popTimeline
+            // Phase A: Rapid pressurized balloon expansion
+            .to(el, {
+              scale: currentScale * 1.4,
+              opacity: 0.9,
+              rotation: "+=35",
+              duration: 0.08,
+              ease: "power2.out",
+            })
+            // Phase B: Complete molecular surface collapse burst
+            .to(el, {
+              scale: 0,
+              opacity: 0,
+              duration: 0.12,
+              ease: "back.in(2.5)",
+            });
+        };
+
+        // Bind internal method hooks onto native DOM interface for event accessibility
+        (el as any).__gsapPopTrigger = triggerPop;
+
+        // Kick off immediate system loops
+        resetAndFloat(true);
+      });
+    });
+
+    return () => ctx.revert();
+  }, [isMounted]);
+
   if (!isMounted) {
     return <div className="absolute inset-0 bg-[#f4efe6]" />;
   }
 
   return (
-    <div
-      className="absolute inset-0 overflow-hidden bg-[#f4efe6]"
-      onMouseMove={(e) =>
-        setMouse({
-          x: e.clientX,
-          y: e.clientY,
-        })
-      }
-      onMouseLeave={() => setMouse({ x: -9999, y: -9999 })}
-    >
-      {/* Seamless Wall-to-Wall Grid Container */}
+    <div ref={containerRef} className="absolute inset-0 overflow-hidden bg-[#f4efe6]">
+      {/* Dynamic Animated Node Layer */}
       {items.map((item) => {
         const Icon = item.Icon;
-
-        let offsetX = 0;
-        let offsetY = 0;
-        let baseOpacity = 0.35; // Matches visibility setting from image_69053a.png
-
-        const px = (windowSize.width * item.x) / 100;
-        const py = (windowSize.height * item.y) / 100;
-
-        // 1. Interactive Mouse Deflection Calculations
-        const dx = px - mouse.x;
-        const dy = py - mouse.y;
-        const mouseDist = Math.sqrt(dx * dx + dy * dy);
-        const pushRadius = 120; // Radius distance determining when an icon moves away
-
-        if (mouseDist < pushRadius && mouseDist > 0) {
-          const strength = (pushRadius - mouseDist) / pushRadius;
-          offsetX = (dx / mouseDist) * strength * 35; // Maximum pixel translation away from cursor
-          offsetY = (dy / mouseDist) * strength * 35;
-        }
-
-        // 2. Proximity Masking Layer
-        // Keeps the layout running everywhere, but lowers opacity beneath your card so login fields stay completely legible
-        const cardCenterX = windowSize.width / 2;
-        const cardCenterY = windowSize.height / 2;
-        const cardDx = Math.abs(px - cardCenterX);
-        const cardDy = Math.abs(py - cardCenterY);
-
-        if (cardDx < 220 && cardDy < 340) {
-          baseOpacity = 0.05; // Fade to whisper-thin visibility directly behind form inputs
-        } else if (cardDx < 280 && cardDy < 400) {
-          baseOpacity = 0.18; // Intermediate transition boundary step
-        }
-
         return (
           <div
             key={item.id}
-            className="absolute transition-all duration-300 ease-out text-slate-700 hover:text-black hover:scale-125 cursor-default z-0"
-            style={{
-              left: `${item.x}%`,
-              top: `${item.y}%`,
-              opacity: baseOpacity,
-              transform: `translate(calc(-50% + ${offsetX}px), calc(-50% + ${offsetY}px))`,
+            className="balloon-item absolute will-change-transform cursor-pointer text-slate-700 hover:text-black transition-colors duration-200 z-0 select-none"
+            style={{ top: 0, left: 0 }}
+            onClick={(e) => {
+              const currentTarget = e.currentTarget as any;
+              if (currentTarget.__gsapPopTrigger) {
+                currentTarget.__gsapPopTrigger();
+              }
             }}
           >
-            <Icon size={24} />
+            <Icon size={26} />
           </div>
         );
       })}
 
-      {/* Lighting Depth Vignette */}
+      {/* Lighting Depth Vignette Overlay */}
       <div
         className="absolute inset-0 pointer-events-none mix-blend-multiply opacity-25 z-10"
         style={{

@@ -171,8 +171,4 @@ app.use((err: any, req: any, res: any, next: any) => {
   });
 });
 
-app.listen(5000, () => {
-  console.log("MCP server is running on port 5000");
-});
-
 export default app;

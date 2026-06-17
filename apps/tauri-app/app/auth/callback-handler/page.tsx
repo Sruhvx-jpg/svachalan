@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { trpc } from "../../../trpc/client";
 
-export default function OAuthCallbackHandler() {
+function OAuthCallbackHandlerContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
@@ -91,4 +91,17 @@ export default function OAuthCallbackHandler() {
   }
 
   return null;
+}
+
+export default function OAuthCallbackHandler() {
+  return (
+    <Suspense fallback={
+      <div className="flex flex-col items-center justify-center min-h-screen gap-4 bg-zinc-50 dark:bg-zinc-950">
+        <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-50">Connecting account...</h1>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 dark:border-indigo-400"></div>
+      </div>
+    }>
+      <OAuthCallbackHandlerContent />
+    </Suspense>
+  );
 }

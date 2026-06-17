@@ -5,3 +5,5 @@ export * from "./models/userProduct"
 export * from "./models/integratedTool"
 
 export * from "./models/corsair"
+export * from "./models/chatHistory"
+

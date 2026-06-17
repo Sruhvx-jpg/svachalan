@@ -1,0 +1,19 @@
+FROM alpine:latest
+
+# Install dependencies needed for running the supermemory-server binary
+RUN apk add --no-cache curl bash libc6-compat gcompat ca-certificates
+
+# Download and install Supermemory
+RUN curl -fsSL https://supermemory.ai/install | SUPERMEMORY_NO_START=1 SUPERMEMORY_NO_PROMPT=1 bash
+
+# Expose default port
+EXPOSE 6767
+
+# Define volume for persistent data
+VOLUME ["/var/lib/supermemory"]
+
+ENV PATH="/root/.local/bin:${PATH}"
+ENV SUPERMEMORY_DATA_DIR=/var/lib/supermemory
+ENV SUPERMEMORY_PORT=6767
+
+CMD ["supermemory-server"]

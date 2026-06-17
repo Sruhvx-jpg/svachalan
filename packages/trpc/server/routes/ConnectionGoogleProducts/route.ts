@@ -17,11 +17,11 @@ import {
 } from "./model";
 import { setupCorsair } from "corsair";
 import db, { eq } from "../../../../database";
-import { integratedToolsTable, usersTable } from "../../../../database/schema";
+import { integratedToolsTable } from "../../../../database/schema";
 
 const TAGS = ["CorsairGoogleIntegrateOAuth"];
 const getPath = generatePath("Dashboard");
-const APP_URL = "http://localhost:3000"
+const APP_URL = process.env.CORS_ORIGIN || "http://localhost:3000"
 const OAUTH_CALLBACK_URL = `${APP_URL}/api/auth/callback`
 
 export const CorsairGoogleIntegrateOAuth = router({

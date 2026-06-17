@@ -46,9 +46,25 @@ services:
     networks:
       - svachalan-net
 
+  supermemory:
+    build:
+      context: .
+      dockerfile: Dockerfile.supermemory
+    container_name: svachalan-supermemory
+    restart: unless-stopped
+    ports:
+      - "6767:6767"
+    environment:
+      - GEMINI_API_KEY=${GOOGLE_GENERATIVE_AI_API_KEY}
+    volumes:
+      - supermemory-data:/var/lib/supermemory
+    networks:
+      - svachalan-net
+
 networks:
   svachalan-net:
     driver: bridge
 
 volumes:
   redis-data:
+  supermemory-data:

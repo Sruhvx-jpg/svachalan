@@ -2,8 +2,8 @@ import { Pool } from 'pg';
 import { createCorsair, setupCorsair } from 'corsair';
 import { gmail } from "@corsair-dev/gmail"
 import { googlecalendar } from '@corsair-dev/googlecalendar';
-import { buildCorsairToolDefs } from "@corsair-dev/mcp"
-import { generateText, streamText, zodSchema, type ToolSet, type StreamTextResult, type ModelMessage, isLoopFinished } from "ai"
+
+import { generateText, streamText, tool, isLoopFinished, type StreamTextResult, type ModelMessage } from "ai"
 import { createGoogleGenerativeAI } from "@ai-sdk/google"
 import { z } from "zod"
 import { withSupermemory } from "@supermemory/tools/ai-sdk"
@@ -55,30 +55,16 @@ export async function getTenant(userId: string) {
 const SYSTEM_PROMPT = `You are an intelligent email assistant with access to the user's Gmail inbox and Google Calendar.
 You also have persistent long-term memory. Information the user has previously told you (names, email addresses, preferences, etc.) may be included in this system prompt as "User Supermemories". ALWAYS check this context FIRST before using any tools. If the answer is already in your memory context, respond directly without calling tools.
 
-You have access to the following APIs via the \`corsair\` object:
-- \`corsair.gmail.api.messages.list({ q?: string, maxResults?: number })\`: List messages.
-- \`corsair.gmail.api.messages.get({ id: string })\`: Get details of a single message.
-- \`corsair.gmail.api.messages.send({ raw: string })\`: Send a new email.
-- \`corsair.gmail.api.drafts.create({ draft: { message: { raw: string } } })\`: Create a draft email.
-- \`corsair.gmail.api.messages.delete({ id: string })\`: Delete a message.
-- \`corsair.googlecalendar.api.events.list({ calendarId?: string })\`: List calendar events.
+You have access to these tools:
+- list_emails: Search and list emails. Use the 'q' parameter for Gmail search syntax (e.g. "is:unread", "from:alice@example.com").
+- get_email: Get full details of a specific email by ID. Always call list_emails first to get IDs.
+- send_email: Send an email (will be intercepted for user confirmation).
+- create_draft: Create a draft email (will be intercepted for user confirmation).
+- list_calendar_events: List upcoming calendar events.
 
-To send or draft an email, you must:
-1. Construct the email in standard RFC 2822 MIME format (including To, Subject, Content-Type: text/plain; charset="UTF-8", etc.).
-2. Base64url-encode the MIME email body in JavaScript:
-   Buffer.from(mime).toString("base64").replace(/\\+/g, "-").replace(/\\//g, "_").replace(/=+$/, "")
-3. Write a JavaScript snippet calling the send or draft API on the \`corsair\` object.
-4. Execute it using the \`run_script\` tool.
-
-Example script to send an email:
-const to = "recipient@example.com";
-const subject = "Hello";
-const body = "This is the body.";
-const mime = \`To: \${to}\\r\\nSubject: \${subject}\\r\\nContent-Type: text/plain; charset="UTF-8"\\r\\n\\r\\n\${body}\`;
-const base64url = Buffer.from(mime).toString("base64").replace(/\\\\+/g, "-").replace(/\\\\//g, "_").replace(/=+$/, "");
-return await corsair.gmail.api.messages.send({ raw: base64url });
-
-You MUST invoke the \`run_script\` tool immediately when asked to send, draft, list, or get emails/events. Do not describe the action or ask for verbal confirmation beforehand. The system interface will automatically intercept your tool call, decode the MIME message, and present a secure confirmation preview to the user.`;
+When asked to summarize an email, call list_emails to find it, then get_email to read it, then summarize the content.
+When asked to send an email, use send_email directly with to, subject, and body.
+Always respond helpfully and concisely.`;
 
 const googleProvider = createGoogleGenerativeAI({
   apiKey: env.GOOGLE_GENERATIVE_AI_API_KEY,
@@ -132,14 +118,67 @@ const pendingConfirmations = new Map<string, {
   code: string;
 }>();
 
+function sanitizeEmail(message: any) {
+  if (!message) return null;
+  const headers = message.payload?.headers || [];
+  const from = headers.find((h: any) => h.name.toLowerCase() === "from")?.value || "";
+  const subject = headers.find((h: any) => h.name.toLowerCase() === "subject")?.value || "";
+  const date = headers.find((h: any) => h.name.toLowerCase() === "date")?.value || "";
+
+  let body = "";
+  const parts = message.payload?.parts || [];
+
+  const getBodyFromPart = (part: any): string => {
+    if (part.mimeType === "text/plain" && part.body?.data) {
+      try {
+        return Buffer.from(part.body.data, "base64").toString("utf-8");
+      } catch {
+        return "";
+      }
+    }
+    if (part.parts) {
+      for (const subPart of part.parts) {
+        const res = getBodyFromPart(subPart);
+        if (res) return res;
+      }
+    }
+    return "";
+  };
+
+  if (message.payload?.body?.data) {
+    try {
+      body = Buffer.from(message.payload.body.data, "base64").toString("utf-8");
+    } catch { }
+  } else {
+    for (const part of parts) {
+      const res = getBodyFromPart(part);
+      if (res) {
+        body = res;
+        break;
+      }
+    }
+  }
+
+  return {
+    id: message.id,
+    threadId: message.threadId,
+    from,
+    subject,
+    date,
+    snippet: message.snippet,
+    body: body.substring(0, 2000),
+  };
+}
+
 /**
  * Build Vercel AI SDK tools from Corsair tool defs for a specific tenant.
  * Uses a deep proxy to intercept send/draft calls and store confirmation
  * details instead of actually sending.
  */
-function buildToolsForTenant(userId: string): ToolSet {
+function buildToolsForTenant(userId: string) {
   const tenantCorsair = corsair.withTenant(userId);
 
+  // Deep proxy to intercept send/draft calls for confirmation flow
   const createDeepProxy = (target: any, path: string[] = []): any => {
     return new Proxy(target, {
       get(target, prop, receiver) {
@@ -166,7 +205,6 @@ function buildToolsForTenant(userId: string): ToolSet {
                 raw = params.message?.raw || params.requestBody?.message?.raw || "";
               }
 
-              // Decode and store
               let to = "", subject = "", body = "";
               try {
                 if (raw) {
@@ -180,10 +218,9 @@ function buildToolsForTenant(userId: string): ToolSet {
                 console.error("Failed to decode MIME in proxy:", e);
               }
 
-              // Store as a pending confirmation — throw to abort the script
               pendingConfirmations.set(userId, {
                 action, to, subject, body,
-                code: "", // will be set in execute wrapper
+                code: "",
               });
               throw new Error("CONFIRMATION_INTERCEPTED");
             }
@@ -200,46 +237,111 @@ function buildToolsForTenant(userId: string): ToolSet {
     });
   };
 
-  const proxyCorsair = createDeepProxy(tenantCorsair);
-  const corsairDefs = buildCorsairToolDefs({ corsair: proxyCorsair as any });
+  const proxiedTenant = createDeepProxy(tenantCorsair);
 
-  const tools: ToolSet = {};
-  for (const def of corsairDefs) {
-    const inputSchema = zodSchema(z.object(def.shape as any));
-
-    tools[def.name] = {
-      description: def.description,
-      inputSchema,
-      execute: async (args: Record<string, unknown>) => {
+  return {
+    list_emails: tool({
+      description: "List emails from the user's Gmail inbox. Use the 'q' parameter for Gmail search queries (e.g. 'is:unread', 'from:someone@example.com', 'subject:hello').",
+      parameters: z.object({
+        q: z.string().optional().describe("Gmail search query"),
+        maxResults: z.number().optional().describe("Max number of emails to return (default 10)"),
+      }),
+      execute: async ({ q, maxResults }: { q?: string; maxResults?: number }) => {
         await ensureCorsairSetup();
-        // Clear any stale confirmation before running
-        pendingConfirmations.delete(userId);
-
-        const result = await def.handler(args);
-
-        // Check if the proxy intercepted a send/draft call
-        const pending = pendingConfirmations.get(userId);
-        if (pending) {
-          // Store the code that was used so we can re-execute after approval
-          pending.code = (args.code as string) || "";
-          // Return a stop message — DON'T throw (throwing makes the SDK retry)
-          return "[EMAIL_CONFIRMATION_PENDING] The email has been intercepted and a preview will be shown to the user. Stop here and do not take further action.";
-        }
-
-        // Normal tool result
-        return result.content
-          .filter((c: any) => c.type === "text")
-          .map((c: any) => c.text)
-          .join("\n");
+        const result = await proxiedTenant.gmail.api.messages.list({ q, maxResults: maxResults || 10 });
+        return JSON.stringify(result);
       },
-    };
-  }
+    } as any),
 
-  return tools;
+    get_email: tool({
+      description: "Get the full details of a specific email by its message ID. Always call list_emails first to get message IDs.",
+      parameters: z.object({
+        id: z.string().describe("The Gmail message ID"),
+      }),
+      execute: async ({ id }: { id: string }) => {
+        await ensureCorsairSetup();
+        const result = await proxiedTenant.gmail.api.messages.get({ id });
+        return JSON.stringify(sanitizeEmail(result));
+      },
+    } as any),
+
+    send_email: tool({
+      description: "Send an email. Construct the MIME message, base64url-encode it, and pass it as 'raw'. The system will intercept this for user confirmation before actually sending.",
+      parameters: z.object({
+        to: z.string().describe("Recipient email address"),
+        subject: z.string().describe("Email subject"),
+        body: z.string().describe("Email body text"),
+      }),
+      execute: async ({ to, subject, body }: { to: string; subject: string; body: string }) => {
+        await ensureCorsairSetup();
+        pendingConfirmations.delete(userId);
+        const mime = `To: ${to}\r\nSubject: ${subject}\r\nContent-Type: text/plain; charset="UTF-8"\r\n\r\n${body}`;
+        const raw = Buffer.from(mime).toString("base64").replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+        try {
+          await proxiedTenant.gmail.api.messages.send({ raw });
+          return "Email sent successfully.";
+        } catch (e: any) {
+          // If intercepted by the proxy for confirmation
+          if (e.message === "CONFIRMATION_INTERCEPTED") {
+            const pending = pendingConfirmations.get(userId);
+            if (pending) {
+              pending.code = `const mime = \`To: ${to}\\r\\nSubject: ${subject}\\r\\nContent-Type: text/plain; charset="UTF-8"\\r\\n\\r\\n${body}\`;
+const raw = Buffer.from(mime).toString("base64").replace(/\\+/g, "-").replace(/\\//g, "_").replace(/=+$/, "");
+return await corsair.gmail.api.messages.send({ raw });`;
+            }
+            return "[EMAIL_CONFIRMATION_PENDING] The email has been intercepted and a preview will be shown to the user. Stop here and do not take further action.";
+          }
+          throw e;
+        }
+      },
+    } as any),
+
+    create_draft: tool({
+      description: "Create a draft email in the user's Gmail.",
+      parameters: z.object({
+        to: z.string().describe("Recipient email address"),
+        subject: z.string().describe("Email subject"),
+        body: z.string().describe("Email body text"),
+      }),
+      execute: async ({ to, subject, body }: { to: string; subject: string; body: string }) => {
+        await ensureCorsairSetup();
+        pendingConfirmations.delete(userId);
+        const mime = `To: ${to}\r\nSubject: ${subject}\r\nContent-Type: text/plain; charset="UTF-8"\r\n\r\n${body}`;
+        const raw = Buffer.from(mime).toString("base64").replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+        try {
+          await proxiedTenant.gmail.api.drafts.create({ draft: { message: { raw } } });
+          return "Draft created successfully.";
+        } catch (e: any) {
+          if (e.message === "CONFIRMATION_INTERCEPTED") {
+            const pending = pendingConfirmations.get(userId);
+            if (pending) {
+              pending.code = `const mime = \`To: ${to}\\r\\nSubject: ${subject}\\r\\nContent-Type: text/plain; charset="UTF-8"\\r\\n\\r\\n${body}\`;
+const raw = Buffer.from(mime).toString("base64").replace(/\\+/g, "-").replace(/\\//g, "_").replace(/=+$/, "");
+return await corsair.gmail.api.drafts.create({ draft: { message: { raw } } });`;
+            }
+            return "[EMAIL_CONFIRMATION_PENDING] The draft has been intercepted and a preview will be shown to the user.";
+          }
+          throw e;
+        }
+      },
+    } as any),
+
+    list_calendar_events: tool({
+      description: "List upcoming events from the user's Google Calendar.",
+      parameters: z.object({
+        calendarId: z.string().optional().describe("Calendar ID (default: 'primary')"),
+      }),
+      execute: async ({ calendarId }: { calendarId?: string }) => {
+        await ensureCorsairSetup();
+        const result = await proxiedTenant.googlecalendar.api.events.list({ calendarId: calendarId || "primary" });
+        return JSON.stringify(result);
+      },
+    } as any),
+  };
 }
 
 function getModelForTenant(userId: string) {
-  const baseModel = googleProvider("gemma-4-31b-it");
+  const baseModel = googleProvider("gemini-2.5-flash-lite");
   if (env.SUPERMEMORY_API_KEY) {
     return withSupermemory(baseModel, {
       containerTag: userId,
@@ -260,7 +362,6 @@ function getModelForTenant(userId: string) {
  */
 export async function chat(messageOrHistory: string | ModelMessage[], userId: string): Promise<string> {
   await ensureCorsairSetup();
-  // Clear any stale pending confirmation
   pendingConfirmations.delete(userId);
 
   const tools = buildToolsForTenant(userId);
@@ -269,6 +370,8 @@ export async function chat(messageOrHistory: string | ModelMessage[], userId: st
     model: getModelForTenant(userId),
     tools,
     system: SYSTEM_PROMPT,
+    maxSteps: 5,
+    stopWhen: isLoopFinished(),
   };
 
   if (typeof messageOrHistory === "string") {
@@ -277,12 +380,11 @@ export async function chat(messageOrHistory: string | ModelMessage[], userId: st
     options.messages = messageOrHistory;
   }
 
-  const { text } = await generateText({ ...options, maxSteps: 5 });
+  const result = await generateText(options);
 
   // After generateText completes, check if a confirmation was intercepted
   const pending = pendingConfirmations.get(userId);
   if (pending) {
-    // Don't delete yet — the service layer will store it
     throw new Error(
       "ConfirmationRequiredError: " +
       JSON.stringify({
@@ -295,7 +397,7 @@ export async function chat(messageOrHistory: string | ModelMessage[], userId: st
     );
   }
 
-  return text;
+  return result.text;
 }
 
 
@@ -310,6 +412,6 @@ export function streamChat(message: string, userId: string): StreamTextResult<an
     tools,
     system: SYSTEM_PROMPT,
     prompt: message,
-    stopWhen: isLoopFinished()
+    stopWhen: isLoopFinished(),
   });
 }

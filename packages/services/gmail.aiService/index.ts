@@ -77,8 +77,8 @@ class GmailDotAIService {
                 .orderBy(desc(chatMessages.createdAt))
                 .limit(1);
 
-            if (messages.length > 0) {
-                const msg = messages[0];
+            const msg = messages[0];
+            if (msg) {
                 await db.update(chatMessages)
                     .set({
                         ...updates,
@@ -230,8 +230,9 @@ class GmailDotAIService {
                 const pendingContext = `[CONTEXT: There is currently a pending email draft under review:\n- To: ${pending.to}\n- Subject: ${pending.subject}\n- Body: ${pending.body}\n- Action: ${pending.action}\n\nIf the user is asking to modify this draft, update the script and call the run_script tool again. If they are confirming, call run_script to send it. If they are cancelling, acknowledge it.]`;
                 
                 // Add context as a system or developer instruction by injecting it into the last user message
-                if (mappedHistory.length > 0) {
-                    mappedHistory[mappedHistory.length - 1].content = pendingContext + "\n\n" + mappedHistory[mappedHistory.length - 1].content;
+                const lastMsg = mappedHistory[mappedHistory.length - 1];
+                if (lastMsg) {
+                    lastMsg.content = pendingContext + "\n\n" + lastMsg.content;
                 }
             }
 

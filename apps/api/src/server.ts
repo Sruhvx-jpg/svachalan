@@ -120,7 +120,7 @@ app.post("/api/ai/chat/stream", async (req: any, res: any) => {
     const result = streamChat(message, userId);
 
     // pipe the Vercel AI SDK data stream directly to the response
-    result.pipeDataStreamToResponse(res);
+    result.pipeTextStreamToResponse(res);
   } catch (error) {
     logger.error("Streaming chat error:", error);
 

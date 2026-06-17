@@ -11,6 +11,8 @@ import {
   MailOpen,
   Loader2,
   ChevronDown,
+  ChevronLeft,
+  ChevronRight,
   User,
   ArrowRight,
   X,
@@ -353,22 +355,8 @@ export function GmailView() {
   const [activeSearch, setActiveSearch] = useState("");
   const [expandedEmailId, setExpandedEmailId] = useState<string | null>(null);
   const [activeFilter, setActiveFilter] = useState<EmailFilter>("all");
+  const [page, setPage] = useState(0);
   const PAGE_SIZE = 20;
-
-  // --- Infinite scroll state ---
-  const [allEmails, setAllEmails] = useState<typeof rawEmailsPlaceholder>([]);
-  const [currentOffset, setCurrentOffset] = useState(0);
-  const [hasMore, setHasMore] = useState(true);
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
-  const sentinelRef = useRef<HTMLDivElement>(null);
-  const initialLoadDone = useRef(false);
-
-  // Placeholder type reference
-  type EmailItem = {
-    id: string; subject: string; from: string; date: string;
-    snippet: string; isRead: boolean; isSpam: boolean;
-  };
-  const rawEmailsPlaceholder: EmailItem[] = [];
 
   // --- tRPC hooks ---
   const { data: stats, isLoading: statsLoading } =
@@ -380,9 +368,7 @@ export function GmailView() {
     refetch: refetchEmails,
   } = trpc.Email.listEmails.useQuery({
     limit: PAGE_SIZE,
-    offset: currentOffset,
-  }, {
-    enabled: !initialLoadDone.current || isLoadingMore,
+    offset: page * PAGE_SIZE,
   });
 
   const {
@@ -396,61 +382,11 @@ export function GmailView() {
   const { refetch: syncEmails, isFetching: isSyncing } =
     trpc.Email.syncEmails.useQuery(undefined, { enabled: false });
 
-  // --- Accumulate emails on data change ---
-  useEffect(() => {
-    if (emailsData?.emails) {
-      if (currentOffset === 0) {
-        setAllEmails(emailsData.emails);
-      } else {
-        setAllEmails(prev => {
-          const existingIds = new Set(prev.map(e => e.id));
-          const newEmails = emailsData.emails.filter(e => !existingIds.has(e.id));
-          return [...prev, ...newEmails];
-        });
-      }
-      if (emailsData.emails.length < PAGE_SIZE) {
-        setHasMore(false);
-      }
-      setIsLoadingMore(false);
-      initialLoadDone.current = true;
-    }
-  }, [emailsData, currentOffset]);
-
-  // --- IntersectionObserver for infinite scroll ---
-  const loadMore = useCallback(() => {
-    if (!hasMore || isLoadingMore || emailsLoading) return;
-    setIsLoadingMore(true);
-    setCurrentOffset(prev => prev + PAGE_SIZE);
-  }, [hasMore, isLoadingMore, emailsLoading]);
-
-  useEffect(() => {
-    if (isLoadingMore && currentOffset > 0) {
-      refetchEmails();
-    }
-  }, [currentOffset, isLoadingMore, refetchEmails]);
-
-  useEffect(() => {
-    const sentinel = sentinelRef.current;
-    if (!sentinel) return;
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting) {
-          loadMore();
-        }
-      },
-      { threshold: 0.1 }
-    );
-
-    observer.observe(sentinel);
-    return () => observer.disconnect();
-  }, [loadMore]);
-
   // --- derived state ---
   const isSearching = activeSearch.length > 0;
   const rawEmails = isSearching
     ? searchResults?.emails ?? []
-    : allEmails;
+    : emailsData?.emails ?? [];
 
   // Apply client-side filter
   const displayedEmails = rawEmails.filter((email) => {
@@ -473,17 +409,13 @@ export function GmailView() {
     }
   });
 
-  const isLoadingEmails = isSearching ? searchLoading : (emailsLoading && currentOffset === 0);
+  const isLoadingEmails = isSearching ? searchLoading : emailsLoading;
 
   const filterCounts = {
-    all: rawEmails.length,
-    unread: rawEmails.filter((e) => !e.isRead).length,
-    spam: rawEmails.filter((e) => e.isSpam).length,
-    today: rawEmails.filter((e) => {
-      const d = new Date(e.date);
-      const now = new Date();
-      return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth() && d.getDate() === now.getDate();
-    }).length,
+    all: stats?.totalEmails ?? 0,
+    unread: stats?.unreadCount ?? 0,
+    spam: stats?.spamCount ?? 0,
+    today: stats?.todayCount ?? 0,
   };
 
   const handleSearch = () => {
@@ -509,11 +441,7 @@ export function GmailView() {
 
   const handleSync = async () => {
     await syncEmails();
-    // Reset and re-fetch from beginning
-    setCurrentOffset(0);
-    setHasMore(true);
-    setAllEmails([]);
-    initialLoadDone.current = false;
+    setPage(0);
     refetchEmails();
   };
 
@@ -846,17 +774,38 @@ export function GmailView() {
           </ul>
         )}
 
-        {/* Infinite scroll sentinel */}
-        {!isSearching && displayedEmails.length > 0 && (
-          <div ref={sentinelRef} className="py-4 flex items-center justify-center">
-            {isLoadingMore ? (
-              <div className="flex items-center gap-2">
-                <Loader2 className="h-4 w-4 animate-spin text-indigo-500" />
-                <span className="text-xs text-zinc-400">Loading more…</span>
-              </div>
-            ) : !hasMore ? (
-              <span className="text-xs text-zinc-400 dark:text-zinc-500">All emails loaded</span>
-            ) : null}
+        {/* Pagination - only for list view, not search */}
+        {!isSearching && !isLoadingEmails && displayedEmails.length > 0 && (
+          <div className="flex items-center justify-between border-t border-zinc-100 dark:border-zinc-800/60 px-5 py-3">
+            <button
+              onClick={() => setPage((p) => Math.max(0, p - 1))}
+              disabled={page === 0}
+              className={cn(
+                "flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-colors cursor-pointer",
+                page === 0
+                  ? "text-zinc-300 dark:text-zinc-700 cursor-not-allowed"
+                  : "text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800/60"
+              )}
+            >
+              <ChevronLeft size={14} />
+              Previous
+            </button>
+            <span className="text-xs tabular-nums text-zinc-400 dark:text-zinc-500">
+              Page {page + 1}
+            </span>
+            <button
+              onClick={() => setPage((p) => p + 1)}
+              disabled={displayedEmails.length < PAGE_SIZE}
+              className={cn(
+                "flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-colors cursor-pointer",
+                displayedEmails.length < PAGE_SIZE
+                  ? "text-zinc-300 dark:text-zinc-700 cursor-not-allowed"
+                  : "text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800/60"
+              )}
+            >
+              Next
+              <ChevronRight size={14} />
+            </button>
           </div>
         )}
       </div>

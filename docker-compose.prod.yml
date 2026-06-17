@@ -7,6 +7,9 @@ services:
       - "4000:4000"
     env_file:
       - .env
+    environment:
+      - REDIS_URL=redis://svachalan-redis:6379
+      - SUPERMEMORY_BASE_URL=http://svachalan-supermemory:6767
     depends_on:
       - redis
     networks:
@@ -57,6 +60,7 @@ services:
     environment:
       - GEMINI_API_KEY=${GOOGLE_GENERATIVE_AI_API_KEY}
       - SUPERMEMORY_API_KEY=${SUPERMEMORY_API_KEY}
+      - PORT=6767
       - HOST=0.0.0.0
       - HOSTNAME=0.0.0.0
     volumes:

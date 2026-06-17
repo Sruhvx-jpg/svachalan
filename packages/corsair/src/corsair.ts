@@ -43,6 +43,7 @@ export function ensureCorsairSetup() {
 }
 
 export async function getTenant(userId: string) {
+  await ensureCorsairSetup();
   return await corsair.withTenant(userId);
 }
 

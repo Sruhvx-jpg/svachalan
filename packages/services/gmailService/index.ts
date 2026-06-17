@@ -64,10 +64,18 @@ class EmailService {
         try {
             const tenant = await getTenant(userId)
 
-            const dbMsgs = await tenant.gmail.db.messages.list({ limit: 100 })
+            const dbMsgs = await tenant.gmail.db.messages.list({ limit: 500 })
+
+            dbMsgs.sort((a, b) => {
+                const dateA = a.data?.internalDate ? Number(a.data.internalDate) : a.created_at.getTime();
+                const dateB = b.data?.internalDate ? Number(b.data.internalDate) : b.created_at.getTime();
+                return dateB - dateA;
+            });
+
+            const pageMsgs = dbMsgs.slice(offset, offset + limit);
 
             const liveMsgs = await Promise.all(
-                dbMsgs.map(async (msg) => {
+                pageMsgs.map(async (msg) => {
                     try {
                         const liveData = await tenant.gmail.api.messages.get({ id: msg.entity_id });
                         return { ...msg, data: liveData } as EmailMessage;
@@ -77,13 +85,7 @@ class EmailService {
                 })
             );
 
-            liveMsgs.sort((a, b) => {
-                const dateA = a.data?.internalDate ? Number(a.data.internalDate) : a.created_at.getTime();
-                const dateB = b.data?.internalDate ? Number(b.data.internalDate) : b.created_at.getTime();
-                return dateB - dateA;
-            });
-
-            return liveMsgs.slice(offset, offset + limit);
+            return liveMsgs;
         } catch (error) {
             throw new Error(
                 `fetchMessages failed: ${error instanceof Error ? error.message : String(error)}`
@@ -94,10 +96,13 @@ class EmailService {
     private async fetchAllMails(userId: string): Promise<EmailMessage[]> {
         try {
             const tenant = await getTenant(userId)
-            const dbMsgs = await tenant.gmail.db.messages.list({ limit: 100 })
+            const dbMsgs = await tenant.gmail.db.messages.list({ limit: 500 })
 
             const liveMsgs = await Promise.all(
                 dbMsgs.map(async (msg) => {
+                    if (msg.data) {
+                        return msg as EmailMessage;
+                    }
                     try {
                         const liveData = await tenant.gmail.api.messages.get({ id: msg.entity_id });
                         return { ...msg, data: liveData } as EmailMessage;
@@ -139,14 +144,18 @@ class EmailService {
     private async triggerGmailSync(userId: string): Promise<void> {
         try {
             const tenant = await getTenant(userId)
-            const listRes = await tenant.gmail.api.messages.list({ maxResults: 100 }) as any;
+            const listRes = await tenant.gmail.api.messages.list({ maxResults: 500 }) as any;
             const messages = listRes.messages || [];
 
-            await Promise.all(
-                messages.map((msg: any) =>
-                    msg.id ? tenant.gmail.api.messages.get({ id: msg.id }) : Promise.resolve()
-                )
-            );
+            const batchSize = 25;
+            for (let i = 0; i < messages.length; i += batchSize) {
+                const batch = messages.slice(i, i + batchSize);
+                await Promise.all(
+                    batch.map((msg: any) =>
+                        msg.id ? tenant.gmail.api.messages.get({ id: msg.id }) : Promise.resolve()
+                    )
+                );
+            }
         } catch (error) {
             throw new Error(
                 `triggerGmailSync failed: ${error instanceof Error ? error.message : String(error)}`

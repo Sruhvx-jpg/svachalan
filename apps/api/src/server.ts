@@ -14,12 +14,17 @@ import { apiReference } from "@scalar/express-api-reference";
 import { serverRouter, createContext } from "@repo/trpc/server";
 
 import { env } from "./env";
-import { corsair } from "@repo/corsair";
+import { corsair, ensureCorsairSetup } from "@repo/corsair";
 import { createBaseMcpServer, createMcpRouter } from "@corsair-dev/mcp";
 import { verifyAccTok } from "@repo/utils"; // <-- wherever yours lives
 import { streamChat } from "@repo/corsair/src/corsair";
 
 export const app = express();
+
+// Run Corsair setup on startup
+ensureCorsairSetup().catch((err) => {
+  logger.error("Failed to run ensureCorsairSetup on server startup:", err);
+});
 
 const openApiDocument = generateOpenApiDocument(serverRouter, {
   title: "Svachalan OpenAPI",

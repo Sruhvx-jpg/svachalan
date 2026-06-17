@@ -23,18 +23,11 @@ export const corsair = createCorsair({
   database: pool
 });
 
-import { Kysely } from "kysely";
 
 let setupPromise: Promise<string> | null = null;
 
 export function ensureCorsairSetup() {
   if (setupPromise) return setupPromise;
-
-  console.log("[corsair-debug] kek:", typeof corsair.kek, corsair.kek ? corsair.kek.substring(0, 5) + "..." : "undefined");
-  console.log("[corsair-debug] plugins:", Array.isArray(corsair.plugins) ? corsair.plugins.length : "not array");
-  console.log("[corsair-debug] database:", !!corsair.database);
-  console.log("[corsair-debug] database.db:", corsair.database?.db ? corsair.database.db.constructor?.name : "undefined");
-  console.log("[corsair-debug] database.db instanceof Kysely:", corsair.database?.db instanceof Kysely);
 
   setupPromise = setupCorsair(corsair, {
     credentials: {

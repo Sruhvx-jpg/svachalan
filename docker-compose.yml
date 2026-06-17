@@ -29,6 +29,9 @@ services:
       - "6767:6767"
     environment:
       - GEMINI_API_KEY=${GOOGLE_GENERATIVE_AI_API_KEY}
+      - SUPERMEMORY_API_KEY=${SUPERMEMORY_API_KEY}
+      - HOST=0.0.0.0
+      - HOSTNAME=0.0.0.0
     volumes:
       - supermemory-data:/var/lib/supermemory
 

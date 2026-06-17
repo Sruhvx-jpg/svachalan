@@ -3,7 +3,7 @@ import { createCorsair, setupCorsair } from 'corsair';
 import { gmail } from "@corsair-dev/gmail"
 import { googlecalendar } from '@corsair-dev/googlecalendar';
 import { buildCorsairToolDefs } from "@corsair-dev/mcp"
-import { generateText, streamText, zodSchema, type ToolSet, type StreamTextResult, type ModelMessage } from "ai"
+import { generateText, streamText, zodSchema, type ToolSet, type StreamTextResult, type ModelMessage, isLoopFinished } from "ai"
 import { createGoogleGenerativeAI } from "@ai-sdk/google"
 import { z } from "zod"
 import { withSupermemory } from "@supermemory/tools/ai-sdk"
@@ -310,6 +310,6 @@ export function streamChat(message: string, userId: string): StreamTextResult<an
     tools,
     system: SYSTEM_PROMPT,
     prompt: message,
-    maxSteps: 5,
+    stopWhen: isLoopFinished()
   });
 }

@@ -21,8 +21,8 @@ import { integratedToolsTable } from "../../../../database/schema";
 
 const TAGS = ["CorsairGoogleIntegrateOAuth"];
 const getPath = generatePath("Dashboard");
-const APP_URL = process.env.CORS_ORIGIN || "http://localhost:3000"
-const OAUTH_CALLBACK_URL = `${APP_URL}/api/auth/callback`
+const APP_URL = process.env.CORS_ORIGIN || "https://app.svachalan.space"
+const OAUTH_CALLBACK_URL = `${APP_URL}/api/auth/callback-handler`
 
 export const CorsairGoogleIntegrateOAuth = router({
 
@@ -104,42 +104,42 @@ export const CorsairGoogleIntegrateOAuth = router({
       }
     }),
 
-checkAllIntegratedToolStatus: TokenBasedProcedure.meta({
+  checkAllIntegratedToolStatus: TokenBasedProcedure.meta({
     openapi: { method: 'GET', path: getPath("CheckAllIntegratedToolStatus"), tags: TAGS }
   })
-  .output(z.record(z.string(), z.boolean()))
-  .query(async ({ ctx }) => {
-    try {
-      const userId = ctx.user.sub;
+    .output(z.record(z.string(), z.boolean()))
+    .query(async ({ ctx }) => {
+      try {
+        const userId = ctx.user.sub;
 
-      const [record] = await db
-        .select()
-        .from(integratedToolsTable)
-        .where(eq(integratedToolsTable.userId, userId));
+        const [record] = await db
+          .select()
+          .from(integratedToolsTable)
+          .where(eq(integratedToolsTable.userId, userId));
 
 
-      if (!record) {
-        return {};
+        if (!record) {
+          return {};
+        }
+
+
+        const { userId: _, ...integrationStatuses } = record;
+
+        // Coerce all values to boolean to ensure safety
+        const statusMap: Record<string, boolean> = {};
+        for (const [key, value] of Object.entries(integrationStatuses)) {
+          statusMap[key] = !!value;
+        }
+
+        return statusMap;
+
+      } catch (error) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: error instanceof Error ? error.message : "Failed to fetch integration statuses",
+        });
       }
-
-
-      const { userId: _, ...integrationStatuses } = record;
-
-      // Coerce all values to boolean to ensure safety
-      const statusMap: Record<string, boolean> = {};
-      for (const [key, value] of Object.entries(integrationStatuses)) {
-        statusMap[key] = !!value;
-      }
-
-      return statusMap;
-
-    } catch (error) {
-      throw new TRPCError({
-        code: "INTERNAL_SERVER_ERROR",
-        message: error instanceof Error ? error.message : "Failed to fetch integration statuses",
-      });
-    }
-  }),
+    }),
 
   //end
 })

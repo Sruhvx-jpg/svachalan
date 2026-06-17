@@ -1,7 +1,11 @@
-FROM alpine:latest
+FROM debian:bookworm-slim
 
-# Install dependencies needed for running the supermemory-server binary
-RUN apk add --no-cache curl bash libc6-compat gcompat ca-certificates
+# Install dependencies
+RUN apt-get update && apt-get install -y \
+    curl \
+    bash \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
 
 # Download and install Supermemory
 RUN curl -fsSL https://supermemory.ai/install | SUPERMEMORY_NO_START=1 SUPERMEMORY_NO_PROMPT=1 bash

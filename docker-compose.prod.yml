@@ -24,7 +24,7 @@ services:
       - .env
     environment:
       - NODE_ENV=production
-      - NEXT_PUBLIC_API_URL=http://api.svachalan.space
+      - NEXT_PUBLIC_API_URL=https://api.svachalan.space
     depends_on:
       - api
     healthcheck:

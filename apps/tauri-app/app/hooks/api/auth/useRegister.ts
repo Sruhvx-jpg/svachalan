@@ -15,6 +15,9 @@ export const useSignup = (onSuccess?: () => void) => {
 
   const handleRegisterAsync = useCallback(async (data: any) => {
     const result = await registerUserAsync(data);
+    if (result && result.accessToken) {
+      localStorage.setItem("authentication_token", result.accessToken);
+    }
     if (onSuccess) {
       onSuccess();
     }

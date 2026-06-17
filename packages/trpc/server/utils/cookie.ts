@@ -7,13 +7,15 @@ const ONE_DAY = 24 * ONE_HOUR
 const ONE_MONTH = 30 * ONE_DAY
 const ONE_YEAR = 1 * ONE_MONTH
 
-const defaultCookieOption: CookieOptions = ({
+const isProd = process.env.NODE_ENV === "production";
+
+const defaultCookieOption: CookieOptions = {
     path: "/",
     httpOnly: true,
-    secure: false,
-    sameSite: "strict",
+    secure: isProd,
+    sameSite: isProd ? "none" : "lax",
     maxAge: ONE_YEAR
-})
+}
 
 //================================================== factory function ===========================================
 export function createCookieFactory(res: Response) {
@@ -44,7 +46,16 @@ export function setAuthToken(ctx: TRPCContext, accessToken: string) {
 }
 
 export function getAuthToken(ctx: TRPCContext) {
-    return ctx.getCookie("authentication_token")
+    const cookieToken = ctx.getCookie("authentication_token")
+    if (cookieToken) return cookieToken
+
+    // Fallback: Check the Authorization header
+    const authHeader = ctx.req?.headers?.authorization
+    if (authHeader && authHeader.startsWith("Bearer ")) {
+        return authHeader.substring(7)
+    }
+
+    return undefined
 }
 
 export function deleteAuthToken(ctx: TRPCContext) {

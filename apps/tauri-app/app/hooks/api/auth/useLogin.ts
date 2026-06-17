@@ -14,6 +14,9 @@ export const useLogin = (onSuccess?: () => void) => {
 
   const handleLoginAsync = useCallback(async (data: any) => {
     const result = await loginUserAsync(data);
+    if (result && result.accessToken) {
+      localStorage.setItem("authentication_token", result.accessToken);
+    }
     if (onSuccess) {
       onSuccess();
     }

@@ -277,7 +277,7 @@ export async function chat(messageOrHistory: string | ModelMessage[], userId: st
     options.messages = messageOrHistory;
   }
 
-  const { text } = await generateText(options);
+  const { text } = await generateText({ ...options, maxSteps: 5 });
 
   // After generateText completes, check if a confirmation was intercepted
   const pending = pendingConfirmations.get(userId);
@@ -310,5 +310,6 @@ export function streamChat(message: string, userId: string): StreamTextResult<an
     tools,
     system: SYSTEM_PROMPT,
     prompt: message,
+    maxSteps: 5,
   });
 }

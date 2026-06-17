@@ -10,6 +10,7 @@ export const registerUserInputModel = z.object({
 export const registerUserOutputModel = z.object({
     fullName: z.string().describe("user's fullname"),
     email: z.string().describe("user's email address"),
+    accessToken: z.string().describe("user's access token"),
 })
 
 //================================ login user input output ====================================
@@ -21,6 +22,7 @@ export const loginUserInputModel = z.object({
 export const loginUserOutputModel = z.object({
     fullName: z.string().describe("user's fullname"),
     email: z.string().describe("user's email address"),
+    accessToken: z.string().describe("user's access token"),
 })
 //============================== getMe output model ==============================================
 export const getMeOutputModel = z.object({

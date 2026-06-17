@@ -14,8 +14,14 @@ export const createTRPCHttpBatchClientClient = (opts?: CreateTRPCHttpBatchClient
   return link({
     url: `${getBaseUrl()}/trpc`,
     fetch(url, options) {
+      const token = typeof window !== "undefined" ? localStorage.getItem("authentication_token") : null;
+      const headers = {
+        ...options?.headers,
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      };
       return fetch(url, {
         ...options,
+        headers,
         credentials: "include",
       });
     },

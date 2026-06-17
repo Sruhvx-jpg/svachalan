@@ -31,7 +31,8 @@ export const authRouter = router({
 
       return {
         fullName,
-        email
+        email,
+        accessToken
       }
     } catch (error) {
       throw new TRPCError({
@@ -54,7 +55,8 @@ export const authRouter = router({
 
       return {
         fullName,
-        email
+        email,
+        accessToken
       }
     } catch (error) {
       throw new TRPCError({

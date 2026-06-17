@@ -218,6 +218,7 @@ export default function MainPage() {
   // Logout mutation
   const { mutateAsync: logout, isPending: isLoggingOut } = trpc.auth.logout.useMutation({
     onSuccess: () => {
+      localStorage.removeItem("authentication_token");
       router.push("/");
     },
   });

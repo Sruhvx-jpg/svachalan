@@ -22,7 +22,7 @@ import { integratedToolsTable } from "../../../../database/schema";
 const TAGS = ["CorsairGoogleIntegrateOAuth"];
 const getPath = generatePath("Dashboard");
 const APP_URL = process.env.CORS_ORIGIN || "https://app.svachalan.space"
-const OAUTH_CALLBACK_URL = `${APP_URL}/api/auth/callback-handler`
+const OAUTH_CALLBACK_URL = `${APP_URL}/api/auth/callback`
 
 export const CorsairGoogleIntegrateOAuth = router({
 

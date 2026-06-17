@@ -22,6 +22,11 @@
   "engines": {
     "node": ">=18"
   },
+  "pnpm": {
+    "overrides": {
+      "kysely": "0.28.17"
+    }
+  },
   "dependencies": {
     "@corsair-dev/github": "^0.1.9",
     "@corsair-dev/gmail": "^0.1.4",

@@ -82,8 +82,9 @@ const mcpAuth = (req: any, res: any, next: any) => {
 
 /* ================= MCP ================= */
 
-app.use("/mcp", mcpAuth, (req: any, res: any, next: any) => {
+app.use("/mcp", mcpAuth, async (req: any, res: any, next: any) => {
   const userId = req.user.userId;
+  await ensureCorsairSetup();
 
   return createMcpRouter(() =>
     createBaseMcpServer({
@@ -111,6 +112,11 @@ app.post("/api/ai/chat/stream", async (req: any, res: any) => {
       return res.status(400).json({ error: "Message is required" });
     }
 
+    res.setHeader("Content-Type", "text/event-stream");
+    res.setHeader("Cache-Control", "no-cache");
+    res.setHeader("Connection", "keep-alive");
+
+    await ensureCorsairSetup();
     const result = streamChat(message, userId);
 
     // pipe the Vercel AI SDK data stream directly to the response

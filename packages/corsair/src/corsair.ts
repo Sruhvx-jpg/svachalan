@@ -208,6 +208,7 @@ function buildToolsForTenant(userId: string): ToolSet {
       description: def.description,
       inputSchema,
       execute: async (args: Record<string, unknown>) => {
+        await ensureCorsairSetup();
         // Clear any stale confirmation before running
         pendingConfirmations.delete(userId);
 
@@ -255,6 +256,7 @@ function getModelForTenant(userId: string) {
  * ConfirmationRequiredError if a send/draft was intercepted.
  */
 export async function chat(messageOrHistory: string | ModelMessage[], userId: string): Promise<string> {
+  await ensureCorsairSetup();
   // Clear any stale pending confirmation
   pendingConfirmations.delete(userId);
 

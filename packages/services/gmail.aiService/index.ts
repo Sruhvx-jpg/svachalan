@@ -8,7 +8,7 @@ import type { StreamTextResult } from "ai"
 import * as crypto from "crypto";
 
 //in house modules/packages
-import { chat, streamChat, corsair } from "@repo/corsair/src/corsair"
+import { chat, streamChat, corsair, ensureCorsairSetup } from "@repo/corsair/src/corsair"
 import { db, eq, desc, and, inArray } from "@repo/database";
 import { chatSessions, chatMessages } from "@repo/database/schema";
 
@@ -336,6 +336,7 @@ return await corsair.gmail.api.drafts.create({ draft: { message: { raw: base64ur
 
     public async executeApprovedScript(code: string | undefined, userId: string): Promise<string> {
         try {
+            await ensureCorsairSetup();
             let codeToExecute = code;
             if (!codeToExecute) {
                 const pending = pendingReviews.get(userId);

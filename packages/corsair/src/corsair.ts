@@ -12,14 +12,14 @@ import { withSupermemory } from "@supermemory/tools/ai-sdk"
 import { env } from "./env"
 
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
+  connectionString: env.DATABASE_URL,
 });
 
 //=============================================== main setup ===========================================================
 export const corsair = createCorsair({
   multiTenancy: true,
   plugins: [gmail({ authType: "oauth_2" }), googlecalendar({ authType: "oauth_2" })],
-  kek: process.env.CORSAIR_KEK!,
+  kek: env.CORSAIR_KEK,
   database: pool
 });
 

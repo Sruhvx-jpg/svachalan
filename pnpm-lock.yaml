@@ -4,6 +4,9 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+overrides:
+  kysely: 0.28.17
+
 importers:
 
   .:
@@ -3734,7 +3737,7 @@ packages:
       expo-sqlite: '>=14.0.0'
       gel: '>=2'
       knex: '*'
-      kysely: '*'
+      kysely: 0.28.17
       mysql2: '>=2'
       pg: '>=8'
       postgres: '>=3'
@@ -4829,7 +4832,7 @@ packages:
     resolution: {integrity: sha512-o2t/xNSYJQDW6rVGGFPXKmZ0BEz2dGn66c2B+cO/k9ZNcU2qPWPycQPQ+B+P2MBXbKYq0xV9BZmFIvkUrmFWAQ==}
     engines: {bun: '>=1.2', node: '>=20'}
     peerDependencies:
-      kysely: '>= 0.24.0 < 1'
+      kysely: 0.28.17
       postgres: ^3.4.0
     peerDependenciesMeta:
       postgres:

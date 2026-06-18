@@ -161,7 +161,7 @@ export function MarketplaceView() {
         {activeTab === "for-you" && !searchQuery && featured && (
           <div
             onClick={() => setSelectedProductId(featured.id)}
-            className="group relative w-full h-[200px] sm:h-[260px] rounded-3xl overflow-hidden cursor-pointer bg-gradient-to-r from-emerald-600 via-teal-600 to-indigo-700 hover:shadow-lg transition-all duration-300 mb-10"
+            className="group relative w-full h-[200px] sm:h-[260px] rounded-3xl overflow-hidden cursor-pointer bg-gradient-to-r from-emerald-600 via-teal-600 to-blue-600 hover:shadow-lg transition-all duration-300 mb-10"
           >
             <div className="absolute inset-0 bg-black/10 group-hover:bg-black/5 transition-colors" />
             <div className="absolute -right-10 -bottom-10 size-56 bg-white/10 rounded-full blur-3xl group-hover:scale-110 transition-transform duration-500" />

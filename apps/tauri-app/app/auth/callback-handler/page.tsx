@@ -85,7 +85,7 @@ function OAuthCallbackHandlerContent() {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen gap-4 bg-zinc-50 dark:bg-zinc-950">
         <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-50">Connecting account...</h1>
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 dark:border-indigo-400"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 dark:border-blue-400"></div>
       </div>
     );
   }
@@ -98,7 +98,7 @@ export default function OAuthCallbackHandler() {
     <Suspense fallback={
       <div className="flex flex-col items-center justify-center min-h-screen gap-4 bg-zinc-50 dark:bg-zinc-950">
         <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-50">Connecting account...</h1>
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 dark:border-indigo-400"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 dark:border-blue-400"></div>
       </div>
     }>
       <OAuthCallbackHandlerContent />

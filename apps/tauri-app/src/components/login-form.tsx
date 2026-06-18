@@ -126,12 +126,12 @@ export function LoginForm({
                 {/* Header Title Layer */}
                 <div className="form-item-animate space-y-2.5 opacity-0 pb-1 text-left w-full">
                   <div className="flex items-center gap-2 text-zinc-600 dark:text-zinc-400 text-sm font-medium">
-                    <Command className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+                    <Command className="h-4 w-4 text-blue-500 dark:text-blue-400" />
                     <span className={splineSans.className}>Console Control Center</span>
                   </div>
                   <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50 pt-1 leading-none">
                     Welcome back to{" "}
-                    <span className={`${yatraOne.className} text-indigo-600 dark:text-indigo-400 block sm:inline`}>
+                    <span className={`${yatraOne.className} text-blue-500 dark:text-blue-400 block sm:inline`}>
                       स्वचालन
                     </span>
                   </h1>
@@ -156,7 +156,7 @@ export function LoginForm({
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="name@company.com"
                     required
-                    className="h-12 px-4 border-white/50 dark:border-zinc-800/50 bg-white/50 dark:bg-zinc-900/50 backdrop-blur-md text-sm focus-visible:ring-2 focus-visible:ring-indigo-500/30 focus-visible:border-indigo-500 transition-all rounded-xl shadow-sm w-full block relative z-0 text-zinc-900 dark:text-white"
+                    className="h-12 px-4 border-white/50 dark:border-zinc-800/50 bg-white/50 dark:bg-zinc-900/50 backdrop-blur-md text-sm focus-visible:ring-2 focus-visible:ring-blue-400/30 focus-visible:border-blue-400 transition-all rounded-xl shadow-sm w-full block relative z-0 text-zinc-900 dark:text-white"
                   />
                 </Field>
 
@@ -172,7 +172,7 @@ export function LoginForm({
 
                     <a
                       href="#"
-                      className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 transition hover:underline underline-offset-2"
+                      className="text-xs font-semibold text-blue-500 dark:text-blue-400 transition hover:underline underline-offset-2"
                     >
                       Forgot password?
                     </a>
@@ -186,7 +186,7 @@ export function LoginForm({
                       onChange={(e) => setPassword(e.target.value)}
                       placeholder="••••••••"
                       required
-                      className="h-12 pl-4 pr-12 border-white/50 dark:border-zinc-800/50 bg-white/50 dark:bg-zinc-900/50 backdrop-blur-md text-sm focus-visible:ring-2 focus-visible:ring-indigo-500/30 focus-visible:border-indigo-500 transition-all rounded-xl shadow-sm w-full block relative z-0 text-zinc-900 dark:text-white"
+                      className="h-12 pl-4 pr-12 border-white/50 dark:border-zinc-800/50 bg-white/50 dark:bg-zinc-900/50 backdrop-blur-md text-sm focus-visible:ring-2 focus-visible:ring-blue-400/30 focus-visible:border-blue-400 transition-all rounded-xl shadow-sm w-full block relative z-0 text-zinc-900 dark:text-white"
                     />
 
                     <button
@@ -245,7 +245,7 @@ export function LoginForm({
                   Don't have an account?{" "}
                   <a
                     href="/signup"
-                    className="font-semibold text-indigo-600 dark:text-indigo-400 transition hover:underline underline-offset-4"
+                    className="font-semibold text-blue-500 dark:text-blue-400 transition hover:underline underline-offset-4"
                   >
                     Create one
                   </a>

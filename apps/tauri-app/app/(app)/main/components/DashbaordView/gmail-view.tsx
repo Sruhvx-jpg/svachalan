@@ -40,9 +40,9 @@ function StatCard({
 }) {
   const colorMap: Record<string, { bg: string; text: string; ring: string }> = {
     indigo: {
-      bg: "bg-indigo-500/10 dark:bg-indigo-500/15",
-      text: "text-indigo-600 dark:text-indigo-400",
-      ring: "ring-indigo-500/20",
+      bg: "bg-blue-450/10 dark:bg-blue-400/15",
+      text: "text-blue-500 dark:text-blue-450",
+      ring: "ring-blue-400/20",
     },
     amber: {
       bg: "bg-amber-500/10 dark:bg-amber-500/15",
@@ -153,11 +153,11 @@ function EmailRow({
         onClick={onToggle}
         className={cn(
           "group flex w-full items-start gap-4 px-5 py-3.5 text-left transition-colors duration-200 cursor-pointer",
-          "hover:bg-indigo-500/[0.04] dark:hover:bg-indigo-500/[0.06]",
-          isExpanded && "bg-indigo-500/[0.05] dark:bg-indigo-500/[0.07]",
+          "hover:bg-blue-400/[0.04] dark:hover:bg-blue-400/[0.06]",
+          isExpanded && "bg-blue-400/[0.05] dark:bg-blue-400/[0.07]",
           !email.isRead &&
           !isExpanded &&
-          "bg-indigo-500/[0.02] dark:bg-indigo-500/[0.03]"
+          "bg-blue-400/[0.02] dark:bg-blue-400/[0.03]"
         )}
       >
         {/* Unread indicator */}
@@ -167,7 +167,7 @@ function EmailRow({
               "size-2 rounded-full transition-all duration-300",
               email.isRead
                 ? "bg-transparent"
-                : "bg-indigo-500 shadow-sm shadow-indigo-500/30"
+                : "bg-blue-400 shadow-sm shadow-blue-400/30"
             )}
           />
         </div>
@@ -214,7 +214,7 @@ function EmailRow({
               </span>
             )}
             {!email.isRead && (
-              <span className="inline-flex items-center rounded-md bg-indigo-500/10 px-1.5 py-0.5 text-[10px] font-medium text-indigo-600 dark:text-indigo-400 ring-1 ring-inset ring-indigo-500/20">
+              <span className="inline-flex items-center rounded-md bg-blue-400/10 px-1.5 py-0.5 text-[10px] font-medium text-blue-500 dark:text-blue-400 ring-1 ring-inset ring-blue-400/20">
                 New
               </span>
             )}
@@ -227,7 +227,7 @@ function EmailRow({
             size={16}
             className={cn(
               "text-zinc-400 transition-transform duration-300",
-              isExpanded && "rotate-180 text-indigo-500"
+              isExpanded && "rotate-180 text-blue-400"
             )}
           />
         </div>
@@ -299,7 +299,7 @@ function EmailRow({
               <div className="px-5 py-4 w-full max-w-full overflow-hidden">
                 {detailLoading ? (
                   <div className="flex items-center justify-center py-8">
-                    <Loader2 className="h-5 w-5 animate-spin text-indigo-500" />
+                    <Loader2 className="h-5 w-5 animate-spin text-blue-400" />
                     <span className="ml-2.5 text-sm text-zinc-500">
                       Loading email content…
                     </span>
@@ -325,7 +325,7 @@ function EmailRow({
                     `}} />
                     <div
                       className="email-body-content prose prose-sm dark:prose-invert max-w-none text-zinc-700 dark:text-zinc-300 
-                        prose-a:text-indigo-600 dark:prose-a:text-indigo-400 prose-a:no-underline hover:prose-a:underline
+                        prose-a:text-blue-500 dark:prose-a:text-blue-400 prose-a:no-underline hover:prose-a:underline
                         prose-img:rounded-lg
                         w-full overflow-x-auto max-h-[500px] overflow-y-auto"
                       dangerouslySetInnerHTML={{ __html: fullEmail.body }}
@@ -463,7 +463,7 @@ export function GmailView() {
             <span className="font-light text-zinc-500 dark:text-zinc-400">
               Mail
             </span>{" "}
-            <span className="bg-gradient-to-r from-indigo-500 via-sky-400 to-blue-500 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-blue-500 via-sky-400 to-blue-400 bg-clip-text text-transparent">
               Dashboard
             </span>
           </h1>
@@ -534,7 +534,7 @@ export function GmailView() {
           >
             <div>
               <h3 className="text-sm font-semibold tracking-tight text-zinc-900 dark:text-zinc-100 flex items-center gap-1.5">
-                <span className="size-2 rounded-full bg-indigo-500 animate-pulse" />
+                <span className="size-2 rounded-full bg-blue-400 animate-pulse" />
                 Mails Received
               </h3>
               <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
@@ -564,7 +564,7 @@ export function GmailView() {
                           initial={{ height: 0 }}
                           animate={{ height: `${(item.count / maxCount) * 100}%` }}
                           transition={{ duration: 0.6, ease: "easeOut", delay: idx * 0.05 }}
-                          className="w-full max-w-[32px] rounded-t-lg bg-gradient-to-t from-indigo-500 to-sky-400 dark:from-indigo-600 dark:to-sky-500 hover:from-indigo-600 hover:to-sky-500 cursor-pointer shadow-sm relative overflow-hidden"
+                          className="w-full max-w-[32px] rounded-t-lg bg-gradient-to-t from-blue-400 to-sky-400 dark:from-blue-500 dark:to-sky-500 hover:from-blue-500 hover:to-sky-500 cursor-pointer shadow-sm relative overflow-hidden"
                         >
                           <div className="absolute inset-0 bg-white/10 opacity-0 hover:opacity-100 transition-opacity duration-300" />
                         </motion.div>
@@ -593,7 +593,7 @@ export function GmailView() {
             "relative flex flex-1 items-center rounded-xl border transition-all duration-300",
             "border-zinc-200/60 dark:border-zinc-800/60",
             "bg-white/60 dark:bg-zinc-950/40 backdrop-blur-xl shadow-sm",
-            "focus-within:border-indigo-500/40 focus-within:ring-2 focus-within:ring-indigo-500/10"
+            "focus-within:border-blue-400/40 focus-within:ring-2 focus-within:ring-blue-400/10"
           )}
         >
           <Search
@@ -625,7 +625,7 @@ export function GmailView() {
           disabled={!searchQuery.trim()}
           className={cn(
             "flex h-11 items-center gap-2 rounded-xl px-5 text-[13px] font-semibold transition-all duration-300 shadow-sm",
-            "bg-indigo-600 text-white hover:bg-indigo-500",
+            "bg-blue-500 text-white hover:bg-blue-400",
             !searchQuery.trim() && "opacity-50 cursor-not-allowed"
           )}
         >
@@ -641,7 +641,7 @@ export function GmailView() {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
-            className="flex items-center gap-2 text-sm text-indigo-600 dark:text-indigo-400"
+            className="flex items-center gap-2 text-sm text-blue-500 dark:text-blue-400"
           >
             <Search size={13} />
             <span>
@@ -653,7 +653,7 @@ export function GmailView() {
             <span className="text-zinc-400">·</span>
             <button
               onClick={handleClearSearch}
-              className="font-medium underline decoration-indigo-500/30 underline-offset-2 hover:decoration-indigo-500/60 transition-colors"
+              className="font-medium underline decoration-blue-400/30 underline-offset-2 hover:decoration-blue-400/60 transition-colors"
             >
               Show all
             </button>
@@ -682,8 +682,8 @@ export function GmailView() {
               className={cn(
                 "relative flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-all duration-200",
                 isActive
-                  ? "bg-indigo-600 text-white shadow-sm shadow-indigo-500/20"
-                  : "bg-white/60 dark:bg-zinc-900/40 text-zinc-600 dark:text-zinc-400 border border-zinc-200/50 dark:border-zinc-800/50 hover:border-indigo-500/30 hover:text-indigo-600 dark:hover:text-indigo-400"
+                  ? "bg-blue-500 text-white shadow-sm shadow-blue-400/20"
+                  : "bg-white/60 dark:bg-zinc-900/40 text-zinc-600 dark:text-zinc-400 border border-zinc-200/50 dark:border-zinc-800/50 hover:border-blue-400/30 hover:text-blue-500 dark:hover:text-blue-400"
               )}
             >
               <FilterIcon size={12} />

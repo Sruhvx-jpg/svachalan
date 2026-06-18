@@ -31,7 +31,7 @@ function BentoStat({
   accent: string; isLoading: boolean;
 }) {
   const accents: Record<string, { bg: string; text: string; glow: string }> = {
-    violet: { bg: "bg-violet-500/10", text: "text-violet-600 dark:text-violet-400", glow: "shadow-violet-500/5" },
+    violet: { bg: "bg-blue-400/10", text: "text-blue-550 dark:text-blue-400", glow: "shadow-blue-400/5" },
     sky: { bg: "bg-sky-500/10", text: "text-sky-600 dark:text-sky-400", glow: "shadow-sky-500/5" },
     amber: { bg: "bg-amber-500/10", text: "text-amber-600 dark:text-amber-400", glow: "shadow-amber-500/5" },
     emerald: { bg: "bg-emerald-500/10", text: "text-emerald-600 dark:text-emerald-400", glow: "shadow-emerald-500/5" },
@@ -91,12 +91,12 @@ function EventRow({ event, isExpanded, onToggle, index }: {
         onClick={onToggle}
         className={cn(
           "group flex w-full items-start gap-3 px-4 py-3 text-left transition-colors duration-200 cursor-pointer",
-          "hover:bg-violet-500/[0.04] dark:hover:bg-violet-500/[0.06]",
-          isExpanded && "bg-violet-500/[0.05] dark:bg-violet-500/[0.07]"
+          "hover:bg-blue-400/[0.04] dark:hover:bg-blue-400/[0.06]",
+          isExpanded && "bg-blue-400/[0.05] dark:bg-blue-400/[0.07]"
         )}
       >
         {/* Time badge */}
-        <div className="mt-0.5 shrink-0 text-xs font-semibold text-violet-600 dark:text-violet-400 min-w-[52px] tabular-nums">
+        <div className="mt-0.5 shrink-0 text-xs font-semibold text-blue-550 dark:text-blue-400 min-w-[52px] tabular-nums">
           {event.isAllDay ? "All day" : startDate.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}
         </div>
 
@@ -121,7 +121,7 @@ function EventRow({ event, isExpanded, onToggle, index }: {
           </div>
         </div>
 
-        <ChevronDown size={14} className={cn("mt-1 shrink-0 text-zinc-400 transition-transform duration-300", isExpanded && "rotate-180 text-violet-500")} />
+        <ChevronDown size={14} className={cn("mt-1 shrink-0 text-zinc-400 transition-transform duration-300", isExpanded && "rotate-180 text-blue-400")} />
       </button>
 
       <AnimatePresence>
@@ -137,7 +137,7 @@ function EventRow({ event, isExpanded, onToggle, index }: {
               <div className="px-4 py-3">
                 {isLoading ? (
                   <div className="flex items-center justify-center py-6">
-                    <Loader2 className="h-5 w-5 animate-spin text-violet-500" />
+                    <Loader2 className="h-5 w-5 animate-spin text-blue-400" />
                     <span className="ml-2.5 text-sm text-zinc-500">Loading event…</span>
                   </div>
                 ) : detail ? (
@@ -320,7 +320,7 @@ export function CalendarView() {
   };
 
   // Event color palette for dots
-  const dotColors = ["bg-violet-500", "bg-sky-500", "bg-amber-500", "bg-emerald-500", "bg-rose-500"];
+  const dotColors = ["bg-blue-450", "bg-sky-500", "bg-amber-500", "bg-emerald-500", "bg-rose-500"];
 
   return (
     <section className="flex min-h-[80vh] flex-col gap-6">
@@ -329,7 +329,7 @@ export function CalendarView() {
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50 sm:text-3xl">
             <span className="font-light text-zinc-500 dark:text-zinc-400">Calendar</span>{" "}
-            <span className="bg-gradient-to-r from-violet-500 via-fuchsia-400 to-pink-500 bg-clip-text text-transparent">Dashboard</span>
+            <span className="bg-gradient-to-r from-blue-500 via-sky-400 to-blue-400 bg-clip-text text-transparent">Dashboard</span>
           </h1>
           <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">Your upcoming events at a glance</p>
         </div>
@@ -365,7 +365,7 @@ export function CalendarView() {
               {MONTH_NAMES[currentMonth]} {currentYear}
             </h2>
             <button onClick={goToToday}
-              className="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-md bg-violet-500/10 text-violet-600 dark:text-violet-400 hover:bg-violet-500/20 transition-colors">
+              className="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-md bg-blue-400/10 text-blue-500 dark:text-blue-400 hover:bg-blue-400/20 transition-colors">
               Today
             </button>
           </div>
@@ -426,17 +426,17 @@ export function CalendarView() {
                     className={cn(
                       "relative flex flex-col items-center gap-1 py-2.5 min-h-[72px] border-b border-r border-zinc-100/60 dark:border-zinc-800/30 transition-all duration-200",
                       !cell.isCurrentMonth && "opacity-30",
-                      cell.isCurrentMonth && "hover:bg-violet-500/[0.04] dark:hover:bg-violet-500/[0.06]",
-                      isSelected && cell.isCurrentMonth && "bg-violet-500/[0.08] dark:bg-violet-500/[0.1]",
+                      cell.isCurrentMonth && "hover:bg-blue-500/[0.04] dark:hover:bg-blue-500/[0.06]",
+                      isSelected && cell.isCurrentMonth && "bg-blue-500/[0.08] dark:bg-blue-500/[0.1]",
                     )}
                   >
                     {/* Day number */}
                     <span className={cn(
                       "flex size-7 items-center justify-center rounded-full text-xs font-semibold transition-all",
                       isToday && cell.isCurrentMonth
-                        ? "bg-violet-600 text-white shadow-sm shadow-violet-500/30"
+                        ? "bg-blue-500 text-white shadow-sm shadow-blue-400/30"
                         : isSelected && cell.isCurrentMonth
-                          ? "text-violet-600 dark:text-violet-400 font-bold"
+                          ? "text-blue-550 dark:text-blue-400 font-bold"
                           : "text-zinc-700 dark:text-zinc-300"
                     )}>
                       {cell.day}

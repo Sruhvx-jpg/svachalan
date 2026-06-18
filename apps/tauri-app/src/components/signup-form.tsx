@@ -126,7 +126,7 @@ export function SignupForm({
     switch (score) {
       case 1: return { score: 25, label: "Weak", color: "bg-red-500", text: "text-red-500" };
       case 2: return { score: 50, label: "Fair", color: "bg-amber-500", text: "text-amber-500" };
-      case 3: return { score: 75, label: "Good", color: "bg-indigo-500", text: "text-indigo-500" };
+      case 3: return { score: 75, label: "Good", color: "bg-blue-400", text: "text-blue-400" };
       case 4: return { score: 100, label: "Strong", color: "bg-emerald-500", text: "text-emerald-500" };
       default: return { score: 0, label: "Empty", color: "bg-black/10 dark:bg-white/10", text: "text-zinc-500" };
     }
@@ -154,12 +154,12 @@ export function SignupForm({
               {/* Header Title */}
               <div className="form-item-animate space-y-2.5 opacity-0 pb-1">
                 <div className="flex items-center gap-2 text-zinc-600 dark:text-zinc-400 text-sm font-medium">
-                  <Command className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+                  <Command className="h-4 w-4 text-blue-500 dark:text-blue-400" />
                   <span className={splineSans.className}>Console Control Center</span>
                 </div>
                 <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50 pt-1 leading-none">
                   Create account on{" "}
-                  <span className={`${yatraOne.className} text-indigo-600 dark:text-indigo-400 block sm:inline`}>
+                  <span className={`${yatraOne.className} text-blue-500 dark:text-blue-400 block sm:inline`}>
                     स्वचालन
                   </span>
                 </h1>
@@ -183,7 +183,7 @@ export function SignupForm({
                       onChange={(e) => setFullName(e.target.value)}
                       placeholder="Dron Manish Rane"
                       required
-                      className="h-12 pl-12 pr-4 border-white/50 dark:border-zinc-800/50 bg-white/50 dark:bg-zinc-900/50 backdrop-blur-md text-sm focus-visible:ring-2 focus-visible:ring-indigo-500/30 focus-visible:border-indigo-500 transition-all rounded-xl shadow-sm w-full block relative z-0"
+                      className="h-12 pl-12 pr-4 border-white/50 dark:border-zinc-800/50 bg-white/50 dark:bg-zinc-900/50 backdrop-blur-md text-sm focus-visible:ring-2 focus-visible:ring-blue-400/30 focus-visible:border-blue-400 transition-all rounded-xl shadow-sm w-full block relative z-0"
                     />
                   </div>
                 </Field>
@@ -202,7 +202,7 @@ export function SignupForm({
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="name@company.com"
                       required
-                      className="h-12 pl-12 pr-4 border-white/50 dark:border-zinc-800/50 bg-white/50 dark:bg-zinc-900/50 backdrop-blur-md text-sm focus-visible:ring-2 focus-visible:ring-indigo-500/30 focus-visible:border-indigo-500 transition-all rounded-xl shadow-sm w-full block relative z-0"
+                      className="h-12 pl-12 pr-4 border-white/50 dark:border-zinc-800/50 bg-white/50 dark:bg-zinc-900/50 backdrop-blur-md text-sm focus-visible:ring-2 focus-visible:ring-blue-400/30 focus-visible:border-blue-400 transition-all rounded-xl shadow-sm w-full block relative z-0"
                     />
                   </div>
                 </Field>
@@ -221,7 +221,7 @@ export function SignupForm({
                       onChange={(e) => setPassword(e.target.value)}
                       placeholder="••••••••"
                       required
-                      className="h-12 pl-12 pr-12 border-white/50 dark:border-zinc-800/50 bg-white/50 dark:bg-zinc-900/50 backdrop-blur-md text-sm focus-visible:ring-2 focus-visible:ring-indigo-500/30 focus-visible:border-indigo-500 transition-all rounded-xl shadow-sm w-full block relative z-0"
+                      className="h-12 pl-12 pr-12 border-white/50 dark:border-zinc-800/50 bg-white/50 dark:bg-zinc-900/50 backdrop-blur-md text-sm focus-visible:ring-2 focus-visible:ring-blue-400/30 focus-visible:border-blue-400 transition-all rounded-xl shadow-sm w-full block relative z-0"
                     />
                     <button
                       type="button"
@@ -264,7 +264,7 @@ export function SignupForm({
                               className={cn(
                                 "flex h-4 w-4 items-center justify-center rounded-full border transition-colors shrink-0",
                                 req.cond
-                                  ? "border-indigo-500/30 bg-indigo-500 text-white dark:text-indigo-100 shadow-sm"
+                                  ? "border-blue-400/30 bg-blue-400 text-white dark:text-blue-100 shadow-sm"
                                   : "border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5 text-transparent"
                               )}
                             >
@@ -345,7 +345,7 @@ export function SignupForm({
                 Already have an account?{" "}
                 <a
                   href="/login"
-                  className="font-semibold text-indigo-600 dark:text-indigo-400 transition hover:underline underline-offset-4"
+                  className="font-semibold text-blue-500 dark:text-blue-400 transition hover:underline underline-offset-4"
                 >
                   Sign In
                 </a>

@@ -340,7 +340,7 @@ function GoogleAiChat({ toolName }: { toolName: string }) {
           </span>
           <button
             onClick={handleNewChat}
-            className="p-1.5 rounded-lg bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-500/20 transition cursor-pointer flex items-center gap-1 text-xs font-semibold"
+            className="p-1.5 rounded-lg bg-blue-400/10 text-blue-500 dark:text-blue-400 hover:bg-blue-400/20 transition cursor-pointer flex items-center gap-1 text-xs font-semibold"
             title="Start new chat"
           >
             <Plus size={14} />
@@ -362,7 +362,7 @@ function GoogleAiChat({ toolName }: { toolName: string }) {
                 className={cn(
                   "group flex items-center justify-between px-3 py-2.5 rounded-xl cursor-pointer transition text-sm relative",
                   activeSessionId === session.id
-                    ? "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 font-semibold"
+                    ? "bg-blue-400/10 text-blue-500 dark:text-blue-400 font-semibold"
                     : "text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-white/5 hover:text-zinc-900 dark:hover:text-zinc-200"
                 )}
               >
@@ -447,7 +447,7 @@ function GoogleAiChat({ toolName }: { toolName: string }) {
                   className={cn(
                     "size-8 rounded-xl flex items-center justify-center shrink-0 mt-0.5",
                     msg.role === "user"
-                      ? "bg-indigo-500/10 text-indigo-500 dark:text-indigo-400"
+                      ? "bg-blue-400/10 text-blue-550 dark:text-blue-400"
                       : "bg-emerald-500/10 text-emerald-500 dark:text-emerald-400",
                   )}
                 >
@@ -459,7 +459,7 @@ function GoogleAiChat({ toolName }: { toolName: string }) {
                   className={cn(
                     "rounded-2xl text-sm leading-relaxed",
                     msg.role === "user"
-                      ? "bg-indigo-600/95 text-white rounded-tr-md px-4 py-3 shadow-sm"
+                      ? "bg-blue-500/95 text-white rounded-tr-md px-4 py-3 shadow-sm"
                       : "bg-white dark:bg-white/5 border border-zinc-200/80 dark:border-transparent text-zinc-800 dark:text-zinc-200 rounded-tl-md w-full max-w-lg shadow-sm",
                   )}
                 >
@@ -469,7 +469,7 @@ function GoogleAiChat({ toolName }: { toolName: string }) {
                     !msg.isDeclined ? (
                     <div className="flex flex-col gap-3 p-4 bg-zinc-50 dark:bg-white/5 border border-zinc-200/80 dark:border-white/10 rounded-xl text-zinc-800 dark:text-zinc-100">
                       <div className="flex items-center justify-between border-b border-zinc-200 dark:border-white/10 pb-2">
-                        <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-wide">
+                        <span className="text-xs font-bold text-blue-500 dark:text-blue-400 uppercase tracking-wide">
                           Preview:{" "}
                           {msg.confirmationDetails.action === "send"
                             ? "Send Email"
@@ -488,7 +488,7 @@ function GoogleAiChat({ toolName }: { toolName: string }) {
                             type="text"
                             value={msg.confirmationDetails.to}
                             onChange={(e) => handleFieldChange(i, "to", e.target.value)}
-                            className="flex-1 bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-800 rounded px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-indigo-500 text-zinc-800 dark:text-zinc-100"
+                            className="flex-1 bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-800 rounded px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-blue-400 text-zinc-800 dark:text-zinc-100"
                           />
                         </div>
                         <div className="flex items-center gap-2">
@@ -499,7 +499,7 @@ function GoogleAiChat({ toolName }: { toolName: string }) {
                             type="text"
                             value={msg.confirmationDetails.subject}
                             onChange={(e) => handleFieldChange(i, "subject", e.target.value)}
-                            className="flex-1 bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-800 rounded px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-indigo-500 text-zinc-800 dark:text-zinc-100"
+                            className="flex-1 bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-800 rounded px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-blue-400 text-zinc-800 dark:text-zinc-100"
                           />
                         </div>
                         <div className="pt-2 border-t border-zinc-200 dark:border-zinc-800 flex flex-col gap-1">
@@ -510,7 +510,7 @@ function GoogleAiChat({ toolName }: { toolName: string }) {
                             value={msg.confirmationDetails.body}
                             onChange={(e) => handleFieldChange(i, "body", e.target.value)}
                             rows={6}
-                            className="w-full bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-800 p-2.5 rounded-lg text-zinc-700 dark:text-zinc-300 font-sans focus:outline-none focus:ring-1 focus:ring-indigo-500 text-xs resize-y"
+                            className="w-full bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-800 p-2.5 rounded-lg text-zinc-700 dark:text-zinc-300 font-sans focus:outline-none focus:ring-1 focus:ring-blue-400 text-xs resize-y"
                           />
                         </div>
                       </div>
@@ -532,7 +532,7 @@ function GoogleAiChat({ toolName }: { toolName: string }) {
                             ).finally(() => setExecutingIndex(null));
                           }}
                           disabled={executingIndex !== null}
-                          className="px-3 py-1.5 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-500 rounded-lg shadow-sm flex items-center gap-1.5 transition-all cursor-pointer disabled:opacity-50"
+                          className="px-3 py-1.5 text-xs font-semibold text-white bg-blue-500 hover:bg-blue-400 rounded-lg shadow-sm flex items-center gap-1.5 transition-all cursor-pointer disabled:opacity-50"
                         >
                           {executingIndex === i && (
                             <Loader2 size={12} className="animate-spin" />
@@ -592,7 +592,7 @@ function GoogleAiChat({ toolName }: { toolName: string }) {
               className={cn(
                 "size-9 rounded-xl flex items-center justify-center transition-all shrink-0",
                 input.trim() && !isPending
-                  ? "bg-indigo-600 hover:bg-indigo-500 text-white shadow-sm cursor-pointer"
+                  ? "bg-blue-500 hover:bg-blue-400 text-white shadow-sm cursor-pointer"
                   : "bg-zinc-200 dark:bg-zinc-800 text-zinc-400 cursor-not-allowed",
               )}
             >

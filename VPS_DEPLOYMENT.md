@@ -66,35 +66,27 @@ redis-server
 - **API Health**: http://your-vps-ip:4000/health
 - **API Docs**: http://your-vps-ip:4000/docs
 
-## Production Nginx Reverse Proxy Config
-```nginx
-upstream api {
-    server localhost:4000;
+## Production Caddy Reverse Proxy Config
+
+Caddy automatically provisions and renews TLS certificates via Let's Encrypt
+and forwards `X-Forwarded-For`, `X-Forwarded-Proto`, and `X-Forwarded-Host` headers.
+
+```caddyfile
+api.svachalan.space {
+    reverse_proxy localhost:4000
 }
 
-upstream web {
-    server localhost:3000;
+app.svachalan.space {
+    reverse_proxy localhost:3001
 }
 
-server {
-    listen 80;
-    server_name your-domain.com;
-
-    # API proxy
-    location /api {
-        proxy_pass http://api;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-    }
-
-    # Web proxy
-    location / {
-        proxy_pass http://web;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-    }
+supermemory.svachalanspace {
+    reverse_proxy localhost:6767
 }
 ```
+
+> **Note:** The web container maps internal port 3000 → host port 3001 (see `docker-compose.prod.yml`).
+> Caddy handles HTTPS termination and header forwarding automatically.
 
 ## Stopping Services
 ```bash

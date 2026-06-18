@@ -225,12 +225,12 @@ export function ConnectView() {
           <span className="tracking-tight">&nbsp;</span>
           <GooeyWordLoop 
             words={supportedIntegrations}
-            className="text-indigo-600 dark:text-indigo-400 font-black tracking-tight" 
+            className="text-blue-500 dark:text-blue-400 font-black tracking-tight" 
           />
         </h1>
         <p className="mt-3 text-zinc-600 dark:text-zinc-400 text-sm sm:text-base max-w-xl leading-relaxed">
           Securely authenticate data nodes to activate global automation layers across{" "}
-          <span className="font-bold text-indigo-600 dark:text-indigo-400 inline-block px-0.5">
+          <span className="font-bold text-blue-500 dark:text-blue-400 inline-block px-0.5">
             स्वचालन
           </span>
         </p>
@@ -247,7 +247,7 @@ export function ConnectView() {
         
         {/* GMAIL CARD */}
         <div className="group rounded-[2rem] border border-white/40 dark:border-zinc-800/60 bg-white/50 dark:bg-zinc-950/40 p-6 sm:p-8 shadow-md backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
-          <div className="flex size-12 items-center justify-center rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 mb-5 group-hover:scale-105 transition-transform duration-300">
+          <div className="flex size-12 items-center justify-center rounded-xl bg-blue-400/10 text-blue-500 dark:text-blue-400 mb-5 group-hover:scale-105 transition-transform duration-300">
             <Mail size={24} className="opacity-90" />
           </div>
           <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-50 tracking-tight">Gmail Engine</h2>
@@ -266,7 +266,7 @@ export function ConnectView() {
           >
             {(isPending || isGmailWaiting) && activePlugin === "gmail" ? (
               <>
-                <Loader2 className="h-4 w-4 animate-spin text-indigo-500" />
+                <Loader2 className="h-4 w-4 animate-spin text-blue-400" />
                 <span>Configuring...</span>
               </>
             ) : isGmailConnected ? (
@@ -282,7 +282,7 @@ export function ConnectView() {
 
         {/* CALENDAR CARD */}
         <div className="group rounded-[2rem] border border-white/40 dark:border-zinc-800/60 bg-white/50 dark:bg-zinc-950/40 p-6 sm:p-8 shadow-md backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
-          <div className="flex size-12 items-center justify-center rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 mb-5 group-hover:scale-105 transition-transform duration-300">
+          <div className="flex size-12 items-center justify-center rounded-xl bg-blue-400/10 text-blue-500 dark:text-blue-400 mb-5 group-hover:scale-105 transition-transform duration-300">
             <Calendar size={24} className="opacity-90" />
           </div>
           <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-50 tracking-tight">Google Calendar</h2>
@@ -301,7 +301,7 @@ export function ConnectView() {
           >
             {(isPending || isCalendarWaiting) && activePlugin === "googlecalendar" ? (
               <>
-                <Loader2 className="h-4 w-4 animate-spin text-indigo-500" />
+                <Loader2 className="h-4 w-4 animate-spin text-blue-400" />
                 <span>Configuring...</span>
               </>
             ) : isCalendarConnected ? (

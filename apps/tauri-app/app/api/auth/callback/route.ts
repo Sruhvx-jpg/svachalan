@@ -28,8 +28,8 @@ export async function GET(request: NextRequest) {
       const base64Payload = state.split(".")[0];
       // Decode base64 to plain text string and parse to JSON
       const decodedState = JSON.parse(atob(base64Payload));
-      
-      extractedPlugin = decodedState.plugin || ""; 
+
+      extractedPlugin = decodedState.plugin || "";
     } catch (e) {
       console.error("Failed to safely decode plugin state string:", e);
     }
@@ -37,7 +37,7 @@ export async function GET(request: NextRequest) {
     // Pass the safely extracted plugin name into your next redirect handler route
     const response = NextResponse.redirect(
       new URL(
-        `/auth/callback-handler?code=${code}&state=${encodeURIComponent(state)}&plugin=${extractedPlugin}`,
+        `https://app.svachalan.space/auth/callback-handler?code=${code}&state=${encodeURIComponent(state)}&plugin=${extractedPlugin}`,
         request.url
       )
     );

@@ -30,9 +30,9 @@ import { AiToolView } from "./components/AiToolView/AiToolView";
 import { ConnectView } from "./components/ConnectView/ConnectView";
 import { StarryNight } from "../../../src/components/background-night";
 import { BrushedBackground } from "../../../src/components/background-light";
-import { Spline_Sans } from "next/font/google";
+import { Playfair_Display } from "next/font/google";
 
-const splineSans = Spline_Sans({
+const playfair = Playfair_Display({
   subsets: ["latin"],
 });
 
@@ -48,7 +48,7 @@ const ONBOARDING_STEPS = [
     icon: LayoutDashboard,
     title: "Dashboard",
     description: "Your command center. View email stats, calendar events, and get a bird's-eye view of everything that matters.",
-    accent: "from-indigo-500 to-sky-500",
+    accent: "from-blue-400 to-sky-500",
   },
   {
     icon: PlugZap,
@@ -60,7 +60,7 @@ const ONBOARDING_STEPS = [
     icon: Bot,
     title: "AI Core Tools",
     description: "Your purchased AI tools live here. Chat with AI assistants that can send emails, manage calendars, and more — all with your approval.",
-    accent: "from-violet-500 to-fuchsia-500",
+    accent: "from-blue-500 to-sky-400",
   },
   {
     icon: ShoppingCart,
@@ -241,8 +241,8 @@ export default function MainPage() {
   return (
     <div
       className={cn(
-        "relative h-screen overflow-hidden transition-colors duration-500 md:flex antialiased selection:bg-indigo-500/30",
-        splineSans.className,
+        "relative h-screen overflow-hidden transition-colors duration-500 md:flex antialiased selection:bg-blue-400/30",
+        playfair.className,
         isNightMode ? "dark bg-zinc-950 text-zinc-50" : "bg-[#F8F4EE] text-zinc-900"
       )}
     >
@@ -269,7 +269,7 @@ export default function MainPage() {
         </button>
 
         <div className="flex items-center gap-2 font-semibold text-sm tracking-tight">
-          <Command className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+          <Command className="h-4 w-4 text-blue-500 dark:text-blue-400" />
           <span>Workspace Hub</span>
         </div>
         <div className="w-8" />
@@ -295,11 +295,11 @@ export default function MainPage() {
         {/* Workspace Brand Header Badge */}
         <div className="flex h-16 items-center px-5 border-b border-dashed border-zinc-500/10 dark:border-zinc-400/10">
           <div className="flex items-center gap-3 overflow-hidden">
-            <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-tr from-indigo-600 to-indigo-500 text-white shadow-md shadow-indigo-500/20">
+            <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-tr from-blue-500 to-blue-400 text-white shadow-md shadow-blue-400/20">
               <Command className="h-5 w-5" />
             </div>
             <span className="hidden whitespace-nowrap font-semibold tracking-tight text-base opacity-0 group-hover:opacity-100 transition-opacity duration-300 group-hover:block">
-              <span className="bg-gradient-to-r from-indigo-500 via-sky-400 to-blue-500 bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-blue-500 via-sky-400 to-blue-400 bg-clip-text text-transparent">
                 स्वचालन
               </span>
             </span>
@@ -318,8 +318,8 @@ export default function MainPage() {
                 "absolute h-11 rounded-xl pointer-events-none z-0",
                 "left-1.5 group-hover:left-0 w-11 group-hover:w-full transition-all duration-300 ease-out",
                 isNightMode
-                  ? "bg-indigo-600/20 border border-indigo-500/30 text-indigo-400"
-                  : "bg-indigo-500/10 text-indigo-600 shadow-sm border border-indigo-500/20"
+                  ? "bg-blue-500/20 border border-blue-400/30 text-blue-400"
+                  : "bg-blue-400/10 text-blue-500 shadow-sm border border-blue-400/20"
               )}
               style={{
                 // 44px (height) + 6px (gap-y-1.5 layout padding) = 50px fixed step increments
@@ -336,9 +336,9 @@ export default function MainPage() {
               className={cn(
                 "relative z-10 flex h-11 w-full items-center px-3 transition-colors duration-200 justify-start rounded-xl",
                 activeView === "dashboard"
-                  ? "text-indigo-600 dark:text-indigo-400 font-semibold"
+                  ? "text-blue-500 dark:text-blue-400 font-semibold"
                   : isNightMode ? "text-zinc-400 hover:text-zinc-100" : "text-zinc-600 hover:text-zinc-900",
-                showOnboarding && onboardingStep === 0 && "ring-2 ring-indigo-500 ring-offset-2 ring-offset-transparent"
+                showOnboarding && onboardingStep === 0 && "ring-2 ring-blue-400 ring-offset-2 ring-offset-transparent"
               )}
             >
               <LayoutDashboard size={18} className="shrink-0 mx-auto group-hover:mx-0 transition-all duration-300" />
@@ -355,9 +355,9 @@ export default function MainPage() {
               className={cn(
                 "relative z-10 flex h-11 w-full items-center px-3 transition-colors duration-200 justify-start rounded-xl",
                 activeView === "connect"
-                  ? "text-indigo-600 dark:text-indigo-400 font-semibold"
+                  ? "text-blue-500 dark:text-blue-400 font-semibold"
                   : isNightMode ? "text-zinc-400 hover:text-zinc-100" : "text-zinc-600 hover:text-zinc-900",
-                showOnboarding && onboardingStep === 1 && "ring-2 ring-indigo-500 ring-offset-2 ring-offset-transparent"
+                showOnboarding && onboardingStep === 1 && "ring-2 ring-blue-400 ring-offset-2 ring-offset-transparent"
               )}
             >
               <PlugZap size={18} className="shrink-0 mx-auto group-hover:mx-0 transition-all duration-300" />
@@ -377,9 +377,9 @@ export default function MainPage() {
                 className={cn(
                   "flex h-11 w-full items-center px-3 transition-colors duration-200 justify-start rounded-xl",
                   activeView === "ai-tool"
-                    ? "text-indigo-600 dark:text-indigo-400 font-semibold"
+                    ? "text-blue-500 dark:text-blue-400 font-semibold"
                     : isNightMode ? "text-zinc-400 hover:text-zinc-100" : "text-zinc-600 hover:text-zinc-900",
-                  showOnboarding && onboardingStep === 2 && "ring-2 ring-indigo-500 ring-offset-2 ring-offset-transparent"
+                  showOnboarding && onboardingStep === 2 && "ring-2 ring-blue-400 ring-offset-2 ring-offset-transparent"
                 )}
               >
                 <Bot size={18} className="shrink-0 mx-auto group-hover:mx-0 transition-all duration-300" />
@@ -412,12 +412,12 @@ export default function MainPage() {
                       className={cn(
                         "block w-full rounded-lg px-3 py-2 text-left text-xs transition-all relative",
                         activeView === "ai-tool" && activeTool === product.toolKey
-                          ? "text-indigo-600 dark:text-indigo-400 font-bold"
+                          ? "text-blue-500 dark:text-blue-400 font-bold"
                           : "text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200"
                       )}
                     >
                       {activeView === "ai-tool" && activeTool === product.toolKey && (
-                        <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-3 rounded-full bg-indigo-500" />
+                        <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-3 rounded-full bg-blue-400" />
                       )}
                       {product.name}
                     </button>
@@ -434,9 +434,9 @@ export default function MainPage() {
               className={cn(
                 "relative z-10 flex h-11 w-full items-center px-3 transition-colors duration-200 justify-start rounded-xl",
                 activeView === "marketplace"
-                  ? "text-indigo-600 dark:text-indigo-400 font-semibold"
+                  ? "text-blue-500 dark:text-blue-400 font-semibold"
                   : isNightMode ? "text-zinc-400 hover:text-zinc-100" : "text-zinc-600 hover:text-zinc-900",
-                showOnboarding && onboardingStep === 3 && "ring-2 ring-indigo-500 ring-offset-2 ring-offset-transparent"
+                showOnboarding && onboardingStep === 3 && "ring-2 ring-blue-400 ring-offset-2 ring-offset-transparent"
               )}
             >
               <ShoppingCart size={18} className="shrink-0 mx-auto group-hover:mx-0 transition-all duration-300" />
@@ -454,14 +454,14 @@ export default function MainPage() {
               className={cn(
                 "relative z-10 flex h-11 w-full items-center transition-all duration-300 rounded-xl border",
                 isNightMode
-                  ? "text-indigo-400 bg-indigo-500/5 border-indigo-500/10 hover:text-indigo-300 hover:bg-indigo-500/10"
+                  ? "text-blue-400 bg-blue-400/5 border-blue-400/10 hover:text-blue-300 hover:bg-blue-400/10"
                   : "text-zinc-800 bg-zinc-200/50 border-zinc-300/20 hover:bg-zinc-200/80"
               )}
             >
               <div
                 className={cn(
                   "flex size-8 shrink-0 items-center justify-center rounded-full transition-all duration-300 shadow-sm mx-auto group-hover:mx-0 group-hover:ml-1",
-                  isNightMode ? "bg-indigo-600 text-indigo-50" : "bg-zinc-900 text-zinc-50"
+                  isNightMode ? "bg-blue-500 text-blue-50" : "bg-zinc-900 text-zinc-50"
                 )}
               >
                 {isNightMode ? (
@@ -489,7 +489,7 @@ export default function MainPage() {
                 <div
                   className={cn(
                     "flex size-8 shrink-0 items-center justify-center rounded-full transition-all duration-300 mx-auto group-hover:mx-0 group-hover:ml-1",
-                    isNightMode ? "bg-indigo-500/15 text-indigo-400" : "bg-indigo-500/10 text-indigo-600"
+                    isNightMode ? "bg-blue-400/15 text-blue-400" : "bg-blue-400/10 text-blue-500"
                   )}
                 >
                   <User size={15} className="shrink-0" />
@@ -523,7 +523,7 @@ export default function MainPage() {
             <div className="flex items-center gap-3">
               <div className={cn(
                 "size-10 rounded-full flex items-center justify-center text-sm font-bold",
-                isNightMode ? "bg-indigo-500/20 text-indigo-400" : "bg-indigo-500/10 text-indigo-600"
+                isNightMode ? "bg-blue-400/20 text-blue-400" : "bg-blue-400/10 text-blue-500"
               )}>
                 {me?.fullName?.charAt(0)?.toUpperCase() ?? "U"}
               </div>
@@ -620,7 +620,7 @@ export default function MainPage() {
       >
         <div className="space-y-6">
           <div className="flex items-center gap-2.5 px-3 py-2 border-b border-zinc-500/10">
-            <Command className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
+            <Command className="h-5 w-5 text-blue-500 dark:text-blue-400" />
             <span className="font-bold tracking-tight text-base">स्वचालन Core</span>
           </div>
 
@@ -684,7 +684,7 @@ export default function MainPage() {
                       className={cn(
                         "block w-full rounded-lg px-3 py-2 text-left text-xs transition",
                         activeView === "ai-tool" && activeTool === product.toolKey
-                          ? "text-indigo-600 dark:text-indigo-400 font-bold"
+                          ? "text-blue-500 dark:text-blue-400 font-bold"
                           : isNightMode
                             ? "text-zinc-500 hover:bg-zinc-900"
                             : "text-zinc-500 hover:bg-zinc-200/50"
@@ -719,7 +719,7 @@ export default function MainPage() {
           className={cn(
             "flex h-11 w-full items-center gap-3 rounded-xl px-4 transition text-[13px] font-semibold border border-transparent",
             isNightMode
-              ? "text-indigo-400 bg-indigo-500/5 border-indigo-500/10"
+              ? "text-blue-400 bg-blue-400/5 border-blue-400/10"
               : "text-zinc-600 bg-zinc-200/50 hover:bg-zinc-200"
           )}
         >
@@ -732,7 +732,7 @@ export default function MainPage() {
           <div className="flex items-center gap-3 px-2">
             <div className={cn(
               "size-9 rounded-full flex items-center justify-center text-sm font-bold shrink-0",
-              isNightMode ? "bg-indigo-500/20 text-indigo-400" : "bg-indigo-500/10 text-indigo-600"
+              isNightMode ? "bg-blue-400/20 text-blue-400" : "bg-blue-400/10 text-blue-500"
             )}>
               {me?.fullName?.charAt(0)?.toUpperCase() ?? "U"}
             </div>
@@ -793,7 +793,7 @@ export default function MainPage() {
               fill="none"
               className={cn(
                 "absolute left-[-28px] top-1/2 -translate-y-1/2 z-[220] pointer-events-none origin-right",
-                isNightMode ? "text-indigo-400" : "text-indigo-600"
+                isNightMode ? "text-blue-400" : "text-blue-500"
               )}
             >
               {/* Shaft path (drawn from right to left) */}
@@ -817,12 +817,12 @@ export default function MainPage() {
 
             {/* Header */}
             <div className="flex items-center gap-3">
-              <div className="size-9 rounded-xl bg-gradient-to-tr from-indigo-600 to-indigo-500 text-white flex items-center justify-center shadow-md shadow-indigo-500/10">
+              <div className="size-9 rounded-xl bg-gradient-to-tr from-blue-500 to-blue-400 text-white flex items-center justify-center shadow-md shadow-blue-400/10">
                 <Sparkles size={16} />
               </div>
               <div>
                 <h2 className="text-sm font-bold tracking-tight">
-                  Welcome to <span className="bg-gradient-to-r from-indigo-500 via-sky-400 to-blue-500 bg-clip-text text-transparent">स्वचालन</span>
+                  Welcome to <span className="bg-gradient-to-r from-blue-500 via-sky-400 to-blue-400 bg-clip-text text-transparent">स्वचालन</span>
                 </h2>
                 <p className={cn("text-[10px] font-medium", isNightMode ? "text-zinc-500" : "text-zinc-400")}>
                   Let&apos;s tour the sidebar tabs
@@ -873,7 +873,7 @@ export default function MainPage() {
                   className={cn(
                     "h-1 rounded-full transition-all duration-300",
                     i === onboardingStep
-                      ? "w-4 bg-indigo-500"
+                      ? "w-4 bg-blue-400"
                       : cn("w-1", isNightMode ? "bg-zinc-700" : "bg-zinc-300")
                   )}
                 />
@@ -888,7 +888,7 @@ export default function MainPage() {
                   type="checkbox"
                   checked={dontShowAgain}
                   onChange={(e) => setDontShowAgain(e.target.checked)}
-                  className="size-3 rounded border-zinc-300 dark:border-zinc-700 text-indigo-600 focus:ring-indigo-500 cursor-pointer accent-indigo-600"
+                  className="size-3 rounded border-zinc-300 dark:border-zinc-700 text-blue-500 focus:ring-blue-400 cursor-pointer accent-blue-500"
                 />
                 <span className={cn("text-[10px] font-medium",
                   isNightMode ? "text-zinc-500" : "text-zinc-400"
@@ -915,14 +915,14 @@ export default function MainPage() {
                 {onboardingStep < ONBOARDING_STEPS.length - 1 ? (
                   <button
                     onClick={() => setOnboardingStep(s => s + 1)}
-                    className="flex items-center gap-1 px-3 py-1 rounded-lg text-[11px] font-semibold bg-indigo-600 text-white hover:bg-indigo-500 transition-colors shadow-sm"
+                    className="flex items-center gap-1 px-3 py-1 rounded-lg text-[11px] font-semibold bg-blue-500 text-white hover:bg-blue-400 transition-colors shadow-sm"
                   >
                     Next <ArrowRight size={10} />
                   </button>
                 ) : (
                   <button
                     onClick={dismissOnboarding}
-                    className="flex items-center gap-1 px-3 py-1 rounded-lg text-[11px] font-semibold bg-indigo-600 text-white hover:bg-indigo-500 transition-colors shadow-sm"
+                    className="flex items-center gap-1 px-3 py-1 rounded-lg text-[11px] font-semibold bg-blue-500 text-white hover:bg-blue-400 transition-colors shadow-sm"
                   >
                     Get Started <Sparkles size={10} />
                   </button>

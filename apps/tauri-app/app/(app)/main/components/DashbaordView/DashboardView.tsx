@@ -110,10 +110,10 @@ export function DashboardView() {
             service="Gmail"
             icon={Mail}
             accent={{
-              gradient: "bg-gradient-to-br from-indigo-500 to-sky-400",
-              iconBg: "bg-indigo-500/10",
-              iconText: "text-indigo-600 dark:text-indigo-400",
-              border: "border-indigo-200/40 dark:border-indigo-500/10",
+              gradient: "bg-gradient-to-br from-blue-400 to-sky-400",
+              iconBg: "bg-blue-400/10",
+              iconText: "text-blue-500 dark:text-blue-400",
+              border: "border-blue-200/40 dark:border-blue-400/10",
             }}
           />
         );
@@ -128,10 +128,10 @@ export function DashboardView() {
           service="Google Calendar"
           icon={Calendar}
           accent={{
-            gradient: "bg-gradient-to-br from-violet-500 to-fuchsia-400",
-            iconBg: "bg-violet-500/10",
-            iconText: "text-violet-600 dark:text-violet-400",
-            border: "border-violet-200/40 dark:border-violet-500/10",
+            gradient: "bg-gradient-to-br from-blue-400 to-sky-400",
+            iconBg: "bg-blue-400/10",
+            iconText: "text-blue-500 dark:text-blue-400",
+            border: "border-blue-200/40 dark:border-blue-400/10",
           }}
         />
       );

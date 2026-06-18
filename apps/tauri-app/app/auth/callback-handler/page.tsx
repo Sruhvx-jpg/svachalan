@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, Suspense } from "react";
+import { useEffect, useState, useRef, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { trpc } from "../../../trpc/client";
 
@@ -10,6 +10,7 @@ function OAuthCallbackHandlerContent() {
   const [error, setError] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(true);
   const [success, setSuccess] = useState(false);
+  const hasCalledRef = useRef(false);
 
   // Simple client-side check to see if we're running inside the Tauri native frame
   const isTauri = typeof window !== "undefined" && (window as any).__TAURI_INTERNALS__ !== undefined;
@@ -30,6 +31,8 @@ function OAuthCallbackHandlerContent() {
   });
 
   useEffect(() => {
+    if (hasCalledRef.current) return;
+
     const code = searchParams.get("code");
     const state = searchParams.get("state");
     const plugin = searchParams.get("plugin")!;
@@ -40,13 +43,16 @@ function OAuthCallbackHandlerContent() {
       return;
     }
 
+    hasCalledRef.current = true;
+
     // Call the tRPC mutation to complete the OAuth flow
     callbackMutation.mutate({
       plugin,
       code,
       state
     });
-  }, [searchParams, callbackMutation]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
 
   if (error) {
     return (
